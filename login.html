@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sendm - Sign In</title>
+  <title>Sendmi - Sign In</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -35,14 +35,12 @@
       padding: 50px 40px;
       border-radius: 24px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-      position: relative;
-      z-index: 1;
     }
 
     .logo { font-size: 36px; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 8px; }
     .tall-s { font-size: 1.2em; }
     h2 { font-size: 32px; font-weight: 700; color: var(--gray-800); text-align: center; margin-bottom: 8px; }
-    .subtitle { color: #6c757d; font-size: 16px; text-align: center; margin-bottom: 40px; }
+    .subtitle { color: #6c757d; font-size: 16px; text-align: center; margin-bottom: 40px; line-height: 1.5; }
 
     .form-group { position: relative; margin-bottom: 24px; }
     .form-group input {
@@ -65,7 +63,7 @@
       top: 50%;
       transform: translateY(-50%);
       color: #6c757d;
-      font-size: 16px;
+      font-size: 18px;
       cursor: pointer;
     }
     .form-group input:focus ~ .input-icon,
@@ -128,16 +126,6 @@
     }
     .modal-overlay.show .modal { transform: scale(1); }
 
-    .modal-icon {
-      font-size: 56px;
-      margin-bottom: 16px;
-    }
-    .modal.success .modal-icon { color: var(--success); }
-    .modal.error .modal-icon { color: var(--danger); }
-
-    .modal h3 { font-size: 24px; margin-bottom: 12px; color: var(--gray-800); }
-    .modal p { color: #666; margin-bottom: 20px; font-size: 15px; }
-
     .modal-close {
       position: absolute;
       top: 12px;
@@ -150,6 +138,16 @@
     }
     .modal-close:hover { color: #333; }
 
+    .modal-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+    .modal.success .modal-icon { color: var(--success); }
+    .modal.error .modal-icon { color: var(--danger); }
+
+    .modal h3 { font-size: 24px; margin-bottom: 12px; color: var(--gray-800); }
+    .modal p { color: #666; margin-bottom: 20px; font-size: 15px; }
+
     @media (max-width: 480px) {
       .auth-form { padding: 40px 30px; }
       h2 { font-size: 28px; }
@@ -160,11 +158,12 @@
 <body>
 
   <div class="auth-form">
-    <!-- Login Form -->
+
+    <!-- LOGIN -->
     <div class="switch-form active" id="loginForm">
-      <div class="logo"><span class="tall-s">S</span>endm</div>
+      <div class="logo"><span class="tall-s">S</span>endmi</div>
       <h2>Sign in to your account</h2>
-      <p class="subtitle">Welcome back. Please enter your credentials.</p>
+      <p class="subtitle">Welcome back. Enter your credentials.</p>
 
       <form id="loginFormElement">
         <div class="form-group">
@@ -186,11 +185,11 @@
       </p>
     </div>
 
-    <!-- Signup Form -->
+    <!-- SIGNUP -->
     <div class="switch-form" id="signupForm">
-      <div class="logo"><span class="tall-s">S</span>endm</div>
+      <div class="logo"><span class="tall-s">S</span>endmi</div>
       <h2>Create your account</h2>
-      <p class="subtitle">Get started with a free account.</p>
+      <p class="subtitle">Get started with secure Telegram 2FA.</p>
 
       <form id="signupFormElement">
         <div class="form-group">
@@ -213,30 +212,69 @@
       </p>
     </div>
 
-    <!-- Forgot Password Form -->
+    <!-- FORGOT PASSWORD -->
     <div class="switch-form" id="forgotPasswordForm">
-      <div class="logo"><span class="tall-s">S</span>endm</div>
-      <  <h2>Reset your password</h2>
-      <p class="subtitle">Enter your email and we'll send you a reset link.</p>
+      <div class="logo"><span class="tall-s">S</span>endmi</div>
+      <h2>Reset Your Password</h2>
+      <p class="subtitle">Enter your email and we'll send a<br><b>6-digit code to your Telegram bot</b>.</p>
 
       <form id="forgotFormElement">
         <div class="form-group">
-          <input type="email" id="forgotEmail" placeholder="Email address" required>
+          <input type="email" id="forgotEmail" placeholder="you@example.com" required>
           <i class="fas fa-envelope input-icon"></i>
         </div>
-        <button type="submit" class="auth-btn" id="forgotBtn">Send Reset Link</button>
+        <button type="submit" class="auth-btn" id="forgotBtn">Send 6-Digit Code</button>
       </form>
 
       <p class="auth-link">
-        Remember your password? <a href="#" onclick="switchForm('loginForm')">Sign in here</a>
+        <a href="#" onclick="switchForm('loginForm')">Back to login</a>
       </p>
     </div>
+
+    <!-- ENTER CODE -->
+    <div class="switch-form" id="verifyCodeForm">
+      <div class="logo"><span class="tall-s">S</span>endmi</div>
+      <h2>Enter 6-Digit Code</h2>
+      <p class="subtitle">Check your Telegram bot — we just sent you a code.</p>
+
+      <form id="verifyCodeFormElement">
+        <div class="form-group">
+          <input type="text" id="verificationCode" placeholder="000000" maxlength="6" inputmode="numeric" required>
+          <i class="fas fa-shield-alt input-icon"></i>
+        </div>
+        <button type="submit" class="auth-btn" id="verifyBtn">Verify Code</button>
+      </form>
+
+      <p class="auth-link">
+        Didn't get it? <a href="#" onclick="switchForm('forgotPasswordForm')">Resend code</a>
+      </p>
+    </div>
+
+    <!-- SET NEW PASSWORD - EYE TOGGLES -->
+    <div class="switch-form" id="newPasswordForm">
+      <div class="logo"><span class="tall-s">S</span>endmi</div>
+      <h2>Set New Password</h2>
+      <p class="subtitle">Your new password must be strong and unique.</p>
+
+      <form id="newPasswordFormElement">
+        <div class="form-group">
+          <input type="password" id="newPass" placeholder="New password" required>
+          <i class="fas fa-eye password-toggle" id="newPassToggle" onclick="togglePassword('newPass', 'newPassToggle')"></i>
+        </div>
+        <div class="form-group">
+          <input type="password" id="confirmPass" placeholder="Confirm password" required>
+          <i class="fas fa-eye password-toggle" id="confirmPassToggle" onclick="togglePassword('confirmPass', 'confirmPassToggle')"></i>
+        </div>
+        <button type="submit" class="auth-btn" id="changePassBtn">Change Password</button>
+      </form>
+    </div>
+
   </div>
 
-  <!-- Modal -->
+  <!-- MODAL WITH X BUTTON -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modal">
-      <button class="modal-close" onclick="closeModal()">×</button>
+      <button class="modal-close" onclick="closeModal()">X</button>
       <div class="modal-icon" id="modalIcon"></div>
       <h3 id="modalTitle">Success!</h3>
       <p id="modalMessage">You have been logged in successfully.</p>
@@ -245,16 +283,15 @@
 
   <script>
     const API_BASE = 'https://sendm.onrender.com/api/auth';
+    let currentResetToken = null;
 
-    // Modal
     function showModal(type, title, message) {
       const overlay = document.getElementById('modalOverlay');
-      const modal = document.getElementById('modal');
       const icon = document.getElementById('modalIcon');
       const modalTitle = document.getElementById('modalTitle');
       const modalMessage = document.getElementById('modalMessage');
 
-      modal.className = 'modal ' + type;
+      document.getElementById('modal').className = 'modal ' + type;
       icon.innerHTML = type === 'success' 
         ? '<i class="fas fa-check-circle"></i>' 
         : '<i class="fas fa-times-circle"></i>';
@@ -262,21 +299,14 @@
       modalMessage.textContent = message;
 
       overlay.classList.add('show');
-
-      if (type === 'success') {
-        setTimeout(() => {
-          closeModal();
-          window.location.href = 'dashboard.html';
-        }, 3000);
-      }
     }
 
     function closeModal() {
       document.getElementById('modalOverlay').classList.remove('show');
     }
 
-    function togglePassword(id, iconId) {
-      const input = document.getElementById(id);
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
       if (input.type === 'password') {
         input.type = 'text';
@@ -292,12 +322,35 @@
       document.getElementById(id).classList.add('active');
     }
 
+    // LOGIN
+    document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'Signing In...';
+
+      const payload = {
+        email: document.getElementById('loginEmail').value.trim(),
+        password: document.getElementById('loginPassword').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showModal('success', 'Welcome back!', `Hi ${data.user.fullName.split(' ')[0]}!`);
+          setTimeout(() => { closeModal(); window.location.href = 'dashboard.html'; }, 2500);
+        } else showModal('error', 'Login Failed', data.error || 'Invalid credentials');
+      } catch { showModal('error', 'No Connection', 'Check internet'); }
+      finally { btn.disabled = false; btn.textContent = 'Sign In'; }
+    });
+
     // SIGNUP
     document.getElementById('signupFormElement').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('signupBtn');
-      btn.disabled = true;
-      btn.textContent = 'Creating...';
+      btn.disabled = true; btn.textContent = 'Creating...';
 
       const payload = {
         fullName: document.getElementById('signupName').value.trim(),
@@ -306,76 +359,24 @@
       };
 
       try {
-        const res = await fetch(`${API_BASE}/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        const res = await fetch(`${API_BASE}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await res.json();
-
         if (res.ok) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
-          showModal('success', 'Welcome!', `Hi ${data.user.fullName.split(' ')[0]}! Account created.`);
-        } else {
-          showModal('error', 'Signup Failed', data.error || 'Please try again');
-        }
-      } catch (err) {
-        showModal('error', 'No Connection', 'Check your internet and try again');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Create Account';
-      }
+          showModal('success', 'Account Created!', `Welcome, ${data.user.fullName.split(' ')[0]}!`);
+          setTimeout(() => { closeModal(); window.location.href = 'dashboard.html'; }, 2500);
+        } else showModal('error', 'Error', data.error || 'Try again');
+      } catch { showModal('error', 'Offline', 'Check internet'); }
+      finally { btn.disabled = false; btn.textContent = 'Create Account'; }
     });
 
-    // LOGIN
-    document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('loginBtn');
-      btn.disabled = true;
-      btn.textContent = 'Signing In...';
-
-      const payload = {
-        email: document.getElementById('loginEmail').value.trim(),
-        password: document.getElementById('loginPassword').value
-      };
-
-      try {
-        const res = await fetch(`${API_BASE}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          showModal('success', 'Welcome back!', `Hi ${data.user.fullName.split(' ')[0]}!`);
-        } else {
-          showModal('error', 'Login Failed', data.error || 'Invalid email or password');
-        }
-      } catch (err) {
-        showModal('error', 'No Connection', 'Cannot reach server');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
-      }
-    });
-
-    // FORGOT PASSWORD - NOW WITH REAL FEEDBACK
+    // FORGOT PASSWORD
     document.getElementById('forgotFormElement').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = document.getElementById('forgotBtn');
       const email = document.getElementById('forgotEmail').value.trim();
-
-      if (!email || !email.includes('@')) {
-        showModal('error', 'Invalid Email', 'Please enter a valid email address');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Sending...';
+      const btn = document.getElementById('forgotBtn');
+      btn.disabled = true; btn.textContent = 'Sending Code...';
 
       try {
         const res = await fetch(`${API_BASE}/forgot-password`, {
@@ -386,26 +387,71 @@
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showModal('success', 'Check Your Inbox!', `We sent a reset link to ${email}`);
-          setTimeout(() => switchForm('loginForm'), 4000);
+          currentResetToken = data.resetToken;
+          showModal('success', 'Code Sent!', 'Check your Telegram bot for the 6-digit code.');
+          setTimeout(() => { closeModal(); switchForm('verifyCodeForm'); }, 3000);
         } else {
-          const msg = data.error?.toLowerCase().includes('not found') || data.error?.toLowerCase().includes('exist')
-            ? 'No account found with that email'
-            : data.error || 'Failed to send reset link';
-          showModal('error', 'Not Found', msg);
+          showModal('error', 'Not Found', data.error || 'No account or Telegram not connected');
         }
-      } catch (err) {
-        showModal('error', 'No Connection', 'Please check your internet');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Send Reset Link';
-      }
+      } catch { showModal('error', 'Error', 'Check internet connection'); }
+      finally { btn.disabled = false; btn.textContent = 'Send 6-Digit Code'; }
     });
 
-    // Auto redirect if already logged in
-    if (localStorage.getItem('token')) {
-      window.location.href = 'dashboard.html';
-    }
+    // VERIFY CODE
+    document.getElementById('verifyCodeFormElement').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('verificationCode').value.trim();
+      const btn = document.getElementById('verifyBtn');
+      btn.disabled = true; btn.textContent = 'Verifying...';
+
+      try {
+        const res = await fetch(`${API_BASE}/verify-reset-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resetToken: currentResetToken, code })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showModal('success', 'Verified!', 'Code accepted');
+          setTimeout(() => { closeModal(); switchForm('newPasswordForm'); }, 2000);
+        } else {
+          showModal('error', 'Wrong Code', data.error || 'Try again');
+        }
+      } catch { showModal('error', 'Error', 'Connection failed'); }
+      finally { btn.disabled = false; btn.textContent = 'Verify Code'; }
+    });
+
+    // CHANGE PASSWORD
+    document.getElementById('newPasswordFormElement').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPass = document.getElementById('newPass').value;
+      const confirmPass = document.getElementById('confirmPass').value;
+
+      if (newPass !== confirmPass) return showModal('error', 'Error', 'Passwords do not match');
+      if (newPass.length < 6) return showModal('error', 'Too Short', 'Password must be 6+ characters');
+
+      const btn = document.getElementById('changePassBtn');
+      btn.disabled = true; btn.textContent = 'Updating...';
+
+      try {
+        const res = await fetch(`${API_BASE}/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resetToken: currentResetToken, newPassword: newPass })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showModal('success', 'Password Changed!', 'You can now sign in with your new password.');
+          setTimeout(() => { closeModal(); switchForm('loginForm'); currentResetToken = null; }, 4000);
+        } else showModal('error', 'Failed', data.error);
+      } catch { showModal('error', 'Error', 'Try again'); }
+      finally { btn.disabled = false; btn.textContent = 'Change Password'; }
+    });
+
+    // Auto redirect if logged in
+    if (localStorage.getItem('token')) window.location.href = 'dashboard.html';
   </script>
 </body>
 </html>
