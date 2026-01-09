@@ -87,52 +87,276 @@
       box-shadow: 0 15px 35px rgba(21,100,192,0.4);
     }
 
-    /* Original styles */
-    .sidebar { width:260px; background:white; box-shadow:-2px 0 10px rgba(0,0,0,0.05); padding:20px 0; position:fixed; right:0; top:0; height:100%; z-index:1000; transition:transform 0.3s ease; transform:translateX(100%); display:flex; flex-direction:column; }
+    /* Dashboard styles */
+    .sidebar { 
+      width:260px; 
+      background:white; 
+      box-shadow:-2px 0 10px rgba(0,0,0,0.05); 
+      padding:20px 0; 
+      position:fixed; 
+      right:0; 
+      top:0; 
+      height:100%; 
+      z-index:1000; 
+      transition:transform 0.3s ease; 
+      transform:translateX(100%); 
+      display:flex; 
+      flex-direction:column; 
+    }
     .sidebar.open { transform:translateX(0); }
-    .logo-sidebar { padding:0 24px 30px; font-size:24px; font-weight:700; color:var(--primary); font-family:'Poppins',sans-serif; letter-spacing:1px; }
-    .nav-item { display:flex; align-items:center; padding:12px 24px; color:var(--gray-800); cursor:pointer; transition:0.2s; }
+    .logo-sidebar { 
+      padding:0 24px 30px; 
+      font-size:24px; 
+      font-weight:700; 
+      color:var(--primary); 
+      font-family:'Poppins',sans-serif; 
+      letter-spacing:1px; 
+    }
+    .nav-item { 
+      display:flex; 
+      align-items:center; 
+      padding:12px 24px; 
+      color:var(--gray-800); 
+      cursor:pointer; 
+      transition:0.2s; 
+      text-decoration:none;
+    }
     .nav-item i { width:24px; margin-right:12px; }
     .nav-item:hover { background:var(--gray-100); }
-    .nav-item.active { background:#ebf3ff; color:var(--primary); border-right:4px solid var(--primary); font-weight:600; }
-    .logout-item { margin-top:auto; padding:12px 24px; color:#dc3545; font-weight:600; cursor:pointer; transition:0.2s; }
+    .nav-item.active { 
+      background:#ebf3ff; 
+      color:var(--primary); 
+      border-right:4px solid var(--primary); 
+      font-weight:600; 
+    }
+    .logout-item { 
+      margin-top:auto; 
+      padding:12px 24px; 
+      color:#dc3545; 
+      font-weight:600; 
+      cursor:pointer; 
+      transition:0.2s; 
+    }
     .logout-item:hover { background:#fee2e2; }
     .logout-item i { width:24px; margin-right:12px; }
-    .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:999; opacity:0; visibility:hidden; transition:opacity 0.3s; }
+    .overlay { 
+      position:fixed; 
+      inset:0; 
+      background:rgba(0,0,0,0.4); 
+      z-index:999; 
+      opacity:0; 
+      visibility:hidden; 
+      transition:opacity 0.3s; 
+    }
     .overlay.active { opacity:1; visibility:visible; }
-    .main { flex:1; margin-right:260px; transition:margin-right 0.3s; }
-    .topbar { background:white; padding:16px 30px; box-shadow:0 2px 8px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10; }
+    .main { 
+      flex:1; 
+      margin-right:260px; 
+      transition:margin-right 0.3s; 
+    }
+    .topbar { 
+      background:white; 
+      padding:16px 30px; 
+      box-shadow:0 2px 8px rgba(0,0,0,0.08); 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      position:sticky; 
+      top:0; 
+      z-index:10; 
+    }
     .logo-section { display:flex; align-items:center; gap:12px; }
     .hamburger { font-size:24px; cursor:pointer; color:var(--primary); display:none; }
     .logo { font-size:18px; font-weight:700; font-family:'Poppins',sans-serif; color:var(--primary); letter-spacing:1px; }
     .tall-s { font-size:26px; vertical-align:baseline; }
     .logo-sidebar .tall-s { font-size:34px; }
     .user-info { display:flex; align-items:center; gap:14px; font-weight:500; }
-    .avatar { width:40px; height:40px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; }
-    .content { padding:40px 30px; max-width:900px; margin:0 auto; width:100%; }
-    .welcome-section { margin-bottom:30px; display:flex; align-items:center; gap:14px; }
+    .avatar { 
+      width:40px; 
+      height:40px; 
+      border-radius:50%; 
+      background:var(--primary); 
+      color:white; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      font-weight:bold; 
+      font-size:16px; 
+    }
+    .content { 
+      padding:40px 30px; 
+      max-width:900px; 
+      margin:0 auto; 
+      width:100%; 
+    }
+    .welcome-section { 
+      margin-bottom:30px; 
+      display:flex; 
+      align-items:center; 
+      gap:14px; 
+    }
     .stats-grid { display:flex; flex-direction:column; gap:28px; }
-    .stat-card { background:white; padding:32px; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.15),0 10px 20px -10px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.6); position:relative; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); border:1px solid rgba(255,255,255,0.2); }
+    .stat-card { 
+      background:white; 
+      padding:32px; 
+      border-radius:24px; 
+      box-shadow:0 25px 50px -12px rgba(0,0,0,0.15),0 10px 20px -10px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.6); 
+      position:relative; 
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1); 
+      border:1px solid rgba(255,255,255,0.2); 
+    }
     .stat-card:hover { transform:translateY(-12px); box-shadow:0 35px 70px -15px rgba(0,0,0,0.2); }
-    .stat-label { font-size:14px; color:var(--gray-600); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px; }
-    .stat-value { font-size:38px; font-weight:700; color:var(--primary); margin:8px 0; }
-    .plan-badge { background:#fff4d6; color:#a07800; padding:5px 12px; border-radius:12px; font-size:13px; font-weight:600; display:inline-block; }
-    .upgrade-btn { background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:600; cursor:pointer; margin-top:16px; font-size:15px; transition:all 0.3s; box-shadow:0 8px 20px rgba(21,100,192,0.3); }
-    .upgrade-btn:hover { background:var(--primary-light); transform:translateY(-2px); }
+    .stat-label { 
+      font-size:14px; 
+      color:var(--gray-600); 
+      text-transform:uppercase; 
+      letter-spacing:0.8px; 
+      margin-bottom:12px; 
+    }
+    .stat-value { 
+      font-size:38px; 
+      font-weight:700; 
+      color:var(--primary); 
+      margin:8px 0; 
+    }
+    .plan-badge { 
+      background:#fff4d6; 
+      color:#a07800; 
+      padding:5px 12px; 
+      border-radius:12px; 
+      font-size:13px; 
+      font-weight:600; 
+      display:inline-block; 
+    }
+    .upgrade-btn, .view-btn {
+      background:var(--primary);
+      color:white;
+      border:none;
+      padding:12px 24px;
+      border-radius:12px;
+      font-weight:600;
+      cursor:pointer;
+      margin-top:16px;
+      font-size:15px;
+      transition:all 0.3s;
+      box-shadow:0 8px 20px rgba(21,100,192,0.3);
+      display: none;
+    }
+    .upgrade-btn:hover, .view-btn:hover { 
+      background:var(--primary-light); 
+      transform:translateY(-2px); 
+    }
+    .upgrade-btn.visible, .view-btn.visible { display: block; }
+
+    .loading { color: #999; font-style: italic; font-size: 15px; }
 
     @media (min-width: 992px) { .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:28px; } }
-    @media (max-width: 992px) { .sidebar { transform:translateX(100%); } .sidebar.open { transform:translateX(0); } .main { margin-right:0; } .hamburger { display:block; } }
+    @media (max-width: 992px) { 
+      .sidebar { transform:translateX(100%); } 
+      .sidebar.open { transform:translateX(0); } 
+      .main { margin-right:0; } 
+      .hamburger { display:block; } 
+    }
+
+    /* Upgrade Modal */
+    .comparison-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      padding: 16px;
+    }
+    .comparison-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 380px;
+      overflow: hidden;
+      transform: scale(0.92);
+      transition: transform 0.3s ease;
+    }
+    .comparison-modal.active .modal-content { transform: scale(1); }
+    .modal-header {
+      background: var(--primary);
+      color: white;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 17px;
+    }
+    .modal-header h2 { font-weight: 600; }
+    .close-modal {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      opacity: 0.8;
+    }
+    .close-modal:hover { opacity: 1; }
+    .modal-body {
+      padding: 18px 16px 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      text-align: center;
+    }
+    .plan { padding: 10px 6px; }
+    .plan.premium {
+      background: #f0f5ff;
+      border-radius: 14px;
+      border: 2px solid var(--primary);
+      padding: 12px 6px;
+    }
+    .plan h3 { font-size: 15.5px; margin-bottom: 6px; color: #222; }
+    .price { font-size: 24px; font-weight: 700; color: var(--primary); margin: 8px 0; }
+    .price span { font-size: 12px; color: #666; font-weight: normal; }
+    .features { list-style: none; text-align: left; margin: 10px 0; font-size: 12.5px; color: #444; line-height: 1.35; }
+    .features li { margin: 5px 0; display: flex; align-items: flex-start; font-size: 12px; }
+    .features li i { margin-right: 7px; font-size: 11px; color: var(--success); margin-top: 1px; }
+    .features li.no { color: #aaa; }
+    .features li.no i { color: #ddd; }
+    .main-upgrade-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 5px 14px rgba(21,100,192,0.3);
+      transition: all 0.3s;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .main-upgrade-btn:hover { background:var(--primary-light); transform: translateY(-2px); }
+    .main-upgrade-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   </style>
 </head>
 <body>
 
-  <!-- BLUR MODAL: Shown when Telegram bot not connected -->
+  <!-- Telegram 2FA Blur Modal -->
   <div class="blur-overlay" id="blurOverlay">
     <div class="blur-modal">
       <h2>Telegram 2FA Required</h2>
-      <p>
-        For security, you must connect your personal Telegram bot to receive password reset codes and enable 2FA.
-      </p>
+      <p>For security, you must connect your personal Telegram bot to receive password reset codes and enable 2FA.</p>
       <button class="connect-btn" onclick="window.open('bot.html', '_blank')">
         Connect Telegram Bot Now
       </button>
@@ -141,15 +365,51 @@
 
   <div class="overlay" id="overlay"></div>
 
+  <!-- Upgrade Comparison Modal -->
+  <div class="comparison-modal" id="comparisonModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Compare Plans</h2>
+        <button class="close-modal" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="plan">
+          <h3>Free</h3>
+          <div class="price">₦0<span>/month</span></div>
+          <ul class="features">
+            <li><i class="fas fa-check"></i> 3 broadcasts per day</li>
+            <li><i class="fas fa-check"></i> Up to 5 landing pages</li>
+            <li><i class="fas fa-check"></i> Up to 5 forms</li>
+            <li><i class="fas fa-check"></i> Basic scheduling</li>
+            <li><i class="fas fa-check"></i> Contact management</li>
+            <li class="no"><i class="fas fa-times"></i> Unlimited broadcasts</li>
+          </ul>
+        </div>
+        <div class="plan premium">
+          <h3>Premium</h3>
+          <div class="price">₦5,000<span>/month</span></div>
+          <ul class="features">
+            <li><i class="fas fa-check"></i> Unlimited broadcasts</li>
+            <li><i class="fas fa-check"></i> Unlimited pages</li>
+            <li><i class="fas fa-check"></i> Unlimited forms</li>
+            <li><i class="fas fa-check"></i> Advanced scheduling</li>
+            <li><i class="fas fa-check"></i> Full features</li>
+            <li><i class="fas fa-check"></i> Priority updates</li>
+          </ul>
+          <button class="main-upgrade-btn" id="modalUpgradeBtn">Upgrade to Premium</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="logo-sidebar"><span class="tall-s">S</span>endm</div>
     <nav style="flex-grow: 1;">
-      <div class="nav-item active"><i class="fas fa-home"></i> Dashboard</div>
-      <div class="nav-item"><i class="fas fa-envelope"></i> Schedule</div>
-      <div class="nav-item"><i class="fas fa-users"></i> Contacts</div>
-      <div class="nav-item"><i class="fas fa-file-alt"></i> Forms & Landing Pages</div>
-      <div class="nav-item"><i class="fas fa-cog"></i> Settings</div>
+      <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="broadcast.html" class="nav-item"><i class="fas fa-paper-plane"></i> Broadcasts</a>
+      <a href="contacts.html" class="nav-item"><i class="fas fa-users"></i> Contacts</a>
+      <a href="pages.html" class="nav-item"><i class="fas fa-file-alt"></i> Forms and Landing Pages</a>
     </nav>
     <div class="logout-item" id="logoutBtn">
       <i class="fas fa-sign-out-alt"></i> Logout
@@ -160,7 +420,7 @@
   <div class="main">
     <header class="topbar">
       <div class="logo-section">
-        <span class="logo"><span class="tall-s">S</span>endm</span>
+        <span class="logo"><span class="tall-s">S</span>endmi</span>
       </div>
       <i class="fas fa-bars hamburger" id="hamburger"></i>
     </header>
@@ -174,39 +434,46 @@
       </div>
 
       <div class="stats-grid">
+        <!-- Current Plan -->
         <div class="stat-card">
           <div class="stat-label">Current Plan</div>
-          <div class="plan-badge">Free Plan</div>
-          <div class="stat-value">Free</div>
-          <p style="color:#666;margin:12px 0;font-size:15px;">Limited to 300 messages/day</p>
-          <button class="upgrade-btn">Upgrade Plan</button>
+          <div class="plan-badge" id="planBadge">Loading...</div>
+          <div class="stat-value" id="planValue">—</div>
+          <p style="color:#666;margin:12px 0;font-size:15px;" id="planDesc">Loading subscription status...</p>
+          <button class="upgrade-btn" id="upgradeBtn">Upgrade Plan</button>
         </div>
 
+        <!-- Total Contacts -->
         <div class="stat-card">
           <div class="stat-label">Total Contacts</div>
-          <div class="stat-value">8,429</div>
-          <p style="color:var(--success);font-weight:600;">+127 this week</p>
+          <div class="stat-value" id="totalContacts">—</div>
+          <p class="loading" id="contactsNote">Loading contacts...</p>
+          <button class="view-btn visible" id="viewContactsBtn">View Contacts</button>
         </div>
 
+        <!-- Forms & Landing Pages -->
         <div class="stat-card">
           <div class="stat-label">Forms & Landing Pages</div>
-          <div class="stat-value">12</div>
-          <p style="color:#666;font-size:15px;">8 active • 4 drafts</p>
+          <div class="stat-value" id="totalPages">—</div>
+          <p class="loading" id="pagesNote">Loading...</p>
+          <button class="view-btn visible" id="viewPagesBtn">View All</button>
         </div>
 
+        <!-- Scheduled Broadcasts -->
         <div class="stat-card">
-          <div class="stat-label">Messages Sent This Month</div>
-          <div class="stat-value">18,742</div>
-          <p style="color:var(--success);font-weight:600;">62% of limit</p>
+          <div class="stat-label">Scheduled Broadcasts</div>
+          <div class="stat-value" id="scheduledCount">—</div>
+          <p class="loading" id="scheduledNote">Loading pending broadcasts...</p>
+          <button class="view-btn visible" id="viewScheduledBtn">View Schedule</button>
         </div>
       </div>
     </section>
   </div>
 
   <script>
-    // ONLY CHANGE THIS LINE IF YOUR BACKEND MOVES
-    const BASE_URL = 'https://sendm.onrender.com';
+    const API_BASE_URL = 'https://sendm.onrender.com'; // Update if needed
 
+    // DOM Elements
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
@@ -214,8 +481,17 @@
     const blurOverlay = document.getElementById('blurOverlay');
     const userNameEl = document.getElementById('userName');
     const userAvatarEl = document.getElementById('userAvatar');
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const comparisonModal = document.getElementById('comparisonModal');
+    const modalUpgradeBtn = document.getElementById('modalUpgradeBtn');
+    const closeModalBtn = comparisonModal.querySelector('.close-modal');
 
-    // Mobile sidebar toggle
+    // View Buttons
+    document.getElementById('viewContactsBtn').addEventListener('click', () => window.location.href = 'contacts.html');
+    document.getElementById('viewPagesBtn').addEventListener('click', () => window.location.href = 'pages.html');
+    document.getElementById('viewScheduledBtn').addEventListener('click', () => window.location.href = 'broadcast.html');
+
+    // Sidebar & Modal Controls
     hamburger.addEventListener('click', () => {
       sidebar.classList.toggle('open');
       overlay.classList.toggle('active');
@@ -225,7 +501,6 @@
       overlay.classList.remove('active');
     });
 
-    // Logout
     logoutBtn.addEventListener('click', () => {
       localStorage.clear();
       sessionStorage.clear();
@@ -236,8 +511,21 @@
       window.location.href = "login.html";
     });
 
-    // Load user data from backend
-    async function loadUser() {
+    upgradeBtn.addEventListener('click', () => {
+      comparisonModal.classList.add('active');
+    });
+
+    closeModalBtn.addEventListener('click', () => comparisonModal.classList.remove('active'));
+    comparisonModal.addEventListener('click', (e) => {
+      if (e.target === comparisonModal) comparisonModal.classList.remove('active');
+    });
+
+    // Upgrade Payment
+    async function initiateUpgrade(button) {
+      const originalText = button.textContent.trim();
+      button.textContent = 'Processing...';
+      button.disabled = true;
+
       const token = localStorage.getItem('token');
       if (!token) {
         window.location.href = 'login.html';
@@ -245,45 +533,119 @@
       }
 
       try {
-        const res = await fetch(`${BASE_URL}/api/auth/me`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+        const res = await fetch(`${API_BASE_URL}/api/subscription/initiate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
 
-        if (!res.ok) throw new Error('Unauthorized');
+        const data = await res.json();
+        if (!res.ok || !data.success || !data.authorizationUrl) throw new Error(data.error || 'Payment failed');
 
-        const { user } = await res.json();
-
-        // Update UI
-        userNameEl.textContent = user.fullName || user.email.split('@')[0];
-
-        const initials = (user.fullName || user.email)
-          .split(' ')
-          .map(n => n[0])
-          .join('')
-          .substring(0,2)
-          .toUpperCase();
-        userAvatarEl.textContent = initials || '??';
-
-        // Show blur modal if Telegram not connected
-        if (!user.isTelegramConnected) {
-          blurOverlay.classList.add('active');
-        } else {
-          blurOverlay.classList.remove('active');
-        }
-
+        window.location.href = data.authorizationUrl;
       } catch (err) {
-        console.error('Auth failed:', err);
-        localStorage.removeItem('token');
-        window.location.href = 'login.html';
+        alert('Error: ' + err.message);
+        button.textContent = originalText;
+        button.disabled = false;
       }
     }
 
-    // Run on load
-    loadUser();
+    modalUpgradeBtn.addEventListener('click', () => initiateUpgrade(modalUpgradeBtn));
+
+    // Load All Dashboard Stats in Parallel
+    async function loadDashboardStats() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+      try {
+        const [
+          meRes, subRes, contactsRes, pagesRes, formsRes, scheduledRes
+        ] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/auth/me`, { headers }),
+          fetch(`${API_BASE_URL}/api/subscription/status`, { headers }),
+          fetch(`${API_BASE_URL}/api/contacts`, { headers }),
+          fetch(`${API_BASE_URL}/api/pages`, { headers }),
+          fetch(`${API_BASE_URL}/api/forms`, { headers }),
+          fetch(`${API_BASE_URL}/api/broadcast/scheduled`, { headers })
+        ]);
+
+        // User Info
+        if (meRes.ok) {
+          const { user } = await meRes.json();
+          userNameEl.textContent = user.fullName || user.email.split('@')[0];
+          const initials = (user.fullName || user.email).split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+          userAvatarEl.textContent = initials || '??';
+          blurOverlay.classList.toggle('active', !user.isTelegramConnected);
+        }
+
+        // Subscription Plan
+        if (subRes.ok) {
+          const sub = await subRes.json();
+          const planBadge = document.getElementById('planBadge');
+          const planValue = document.getElementById('planValue');
+          const planDesc = document.getElementById('planDesc');
+
+          if (sub.subscribed) {
+            planBadge.textContent = 'Premium Plan';
+            planBadge.style.background = '#d4edda';
+            planBadge.style.color = '#155724';
+            planValue.textContent = 'Premium';  // Changed: No price shown
+            planDesc.textContent = 'Active until ' + new Date(sub.endDate).toLocaleDateString();
+            planDesc.style.color = '#28a745';
+            upgradeBtn.classList.remove('visible');
+          } else {
+            planBadge.textContent = 'Free Plan';
+            planBadge.style.background = '#fff4d6';
+            planBadge.style.color = '#a07800';
+            planValue.textContent = 'Free';
+            planDesc.textContent = 'Limited to 3 broadcasts per day';
+            planDesc.style.color = '#666';
+            upgradeBtn.classList.add('visible');
+          }
+        }
+
+        // Contacts
+        if (contactsRes.ok) {
+          const { contacts } = await contactsRes.json();
+          const count = contacts.length;
+          document.getElementById('totalContacts').textContent = count.toLocaleString();
+          document.getElementById('contactsNote').textContent = count === 0 ? 'No contacts yet' : '';
+          document.getElementById('contactsNote').classList.remove('loading');
+        }
+
+        // Forms & Landing Pages
+        const pagesData = pagesRes.ok ? await pagesRes.json() : { pages: [] };
+        const formsData = formsRes.ok ? await formsRes.json() : { forms: [] };
+        const totalCount = pagesData.pages.length + formsData.forms.length;
+
+        document.getElementById('totalPages').textContent = totalCount.toLocaleString();
+        document.getElementById('pagesNote').textContent = 
+          pagesData.pages.length + " pages • " + formsData.forms.length + " forms";
+        document.getElementById('pagesNote').classList.remove('loading');
+
+        // Scheduled Broadcasts
+        if (scheduledRes.ok) {
+          const { scheduled } = await scheduledRes.json();
+          const count = scheduled.length;
+          document.getElementById('scheduledCount').textContent = count;
+          document.getElementById('scheduledNote').textContent = 
+            count === 0 ? 'No pending broadcasts' : count + ' pending';
+          document.getElementById('scheduledNote').style.color = count > 0 ? '#28a745' : '#666';
+          document.getElementById('scheduledNote').classList.remove('loading');
+        }
+
+      } catch (err) {
+        console.error('Failed to load dashboard:', err);
+        alert('Failed to load data. Please refresh or log in again.');
+      }
+    }
+
+    // Load on page ready
+    loadDashboardStats();
   </script>
 </body>
-</html>
+</html> 
