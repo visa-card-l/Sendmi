@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sendm • Live Editor</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root{--primary:#1564C0;--primary-light:#3485e5;--gray-600:#6c757d;--gray-800:#343a40;--danger:#dc3545;--success:#28a745;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:40px 20px;min-height:100vh;}
+  .editor-wrapper{max-width:580px;margin:0 auto;background:white;border-radius:20px;overflow:hidden;box-shadow:0 15px 45px rgba(0,0,0,0.15);position:relative;}
+  .save-bar{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.95);padding:12px 20px;border-radius:14px;box-shadow:0 8px 25px rgba(0,0,0,0.15);z-index:100;backdrop-filter:blur(10px);}
+  .save-btn{background:var(--primary);color:white;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;transition:all .3s;}
+  .save-btn:hover{background:var(--primary-light);}
+  .save-btn.saving{opacity:0.7;cursor:not-allowed;}
+  .editor-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;padding:32px;text-align:center;}
+  .editor-body{padding:44px 40px;text-align:center;min-height:600px;position:relative;}
+  .removable-block{position:relative;margin:0 0 40px 0;padding:20px;border-radius:16px;transition:all .3s ease;}
+  .removable-block:hover{outline:3px dashed rgba(21,100,192,0.4);outline-offset:6px;}
+  .delete-block{position:absolute;top:-14px;right:-14px;width:42px;height:42px;background:var(--danger);color:white;border:none;border-radius:50%;font-size:18px;cursor:pointer;opacity:0;transform:translateY(-10px);transition:all .3s ease;box-shadow:0 6px 20px rgba(220,53,69,0.5);z-index:100;display:flex;align-items:center;justify-content:center;}
+  .removable-block:hover .delete-block{opacity:1;transform:translateY(0);}
+  h2.editable{font-size:34px;font-weight:700;color:var(--gray-800);margin-bottom:16px;}
+  p.editable{font-size:17px;color:var(--gray-600);line-height:1.7;margin-bottom:32px;}
+  .landing-image{max-width:100%;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.12);}
+  .cta-button{display:inline-block;padding:18px 50px;font-size:18px;font-weight:600;background:var(--primary);color:white;border:none;border-radius:14px;text-decoration:none;box-shadow:0 10px 30px rgba(21,100,192,0.35);transition:all .3s;}
+  .add-block-btn{margin:60px 0 20px;padding:24px;background:#f0f7ff;border:3px dashed var(--primary);color:var(--primary);border-radius:18px;font-size:20px;font-weight:600;cursor:pointer;transition:all .3s;}
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);z-index:1000;align-items:center;justify-content:center;}
+  .modal.show{display:flex;}
+  .modal-content{background:white;padding:32px;border-radius:16px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+  .link-input{width:100%;padding:14px 18px;border:1px solid #ddd;border-radius:10px;font-size:15px;margin:12px 0;}
+  .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+  .btn-primary,.btn-secondary{padding:13px 20px;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+  .btn-primary{background:var(--primary);color:white;}
+  .btn-secondary{background:#f1f3f5;color:#555;}
+
+  /* Compact horizontal block selection */
+  .block-grid{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    margin:32px 0;
+    flex-wrap:wrap;
+  }
+
+  .block-option{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    width:90px;
+    height:90px;
+    padding:12px;
+    border:2px solid #e2e8f0;
+    border-radius:12px;
+    background:#fafcff;
+    font-weight:600;
+    font-size:14px;
+    color:var(--primary);
+    cursor:pointer;
+    transition:all .25s;
+    gap:8px;
+  }
+
+  .block-option i{
+    font-size:24px;
+  }
+
+  .block-option:hover{
+    background:var(--primary);
+    color:white;
+    border-color:var(--primary);
+    transform:translateY(-4px);
+    box-shadow:0 8px 20px rgba(21,100,192,0.3);
+  }
+
+  .block-modal-footer{
+    margin-top:24px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .success-message{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--success);color:white;padding:16px 32px;border-radius:12px;font-weight:600;z-index:9999;opacity:0;transition:all .4s;}
+  .success-message.show{opacity:1;transform:translateX(-50%) translateY(10px);}
+  .image-edit-btn{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:white;padding:8px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .3s;cursor:pointer;}
+  .image-container{position:relative;display:inline-block;}
+  .image-container:hover .image-edit-btn{opacity:1;}
+  .content-wrapper{position:relative;}
+</style>
+</head>
+<body>
+
+<div class="save-bar">
+  <button class="save-btn" id="saveBtn">Save Page</button>
+</div>
+
+<div class="editor-wrapper">
+  <div class="editor-header">
+    <h1>Sendm • Live Editor</h1>
+    <p>Click to edit • Hover blocks → trash to delete</p>
+  </div>
+
+  <div class="editor-body" id="editorBody">
+    <div class="content-wrapper"><h2 class="editable" contenteditable="true">Get 50% Off Your First Order</h2></div>
+    <div class="content-wrapper"><p class="editable" contenteditable="true">Limited time offer! Join thousands of happy customers and start saving today.</p></div>
+
+    <div class="content-wrapper">
+      <div class="image-container">
+        <img src="https://picsum.photos/600/400" alt="Hero" class="landing-image">
+        <button class="image-edit-btn">Change Image</button>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="cta-wrapper">
+        <a href="https://example.com" class="cta-button editable" contenteditable="true">Claim Your Discount Now</a>
+      </div>
+    </div>
+
+    <button class="add-block-btn" id="addBlockBtn">Add New Block</button>
+  </div>
+</div>
+
+<div class="success-message" id="successToast">
+  Page saved! Share: <a href="#" id="shareLink" target="_blank" style="color:white;text-decoration:underline;"></a>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="imageModal">
+  <div class="modal-content">
+    <h3>Add Image</h3>
+    <p>Upload to <strong>postimages.org</strong> → copy <strong>Direct Link</strong></p>
+    <p>Paste the <strong>direct link</strong> to your image in the field below.</p>
+    <button class="btn-primary" style="margin:10px 0;" onclick="window.open('https://postimages.org','_blank')">Upload Image</button>
+    <input type="text" class="link-input" id="imageLinkInput" placeholder="https://i.postimg.cc/...jpg">
+    <div class="btn-grid">
+      <button class="btn-primary" id="confirmImageBtn">Insert Image</button>
+      <button class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="linkModal">
+  <div class="modal-content">
+    <h3>Edit Button</h3>
+    <input type="text" class="link-input" id="buttonTextInput" placeholder="Button text">
+    <input type="url" class="link-input" id="buttonLink" placeholder="example.com">
+    <div class="btn-grid">
+      <button class="btn-primary" id="saveLinkBtn">Save</button>
+      <button class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="blockModal">
+  <div class="modal-content">
+    <h3>Add New Block</h3>
+    <p>Choose a block type:</p>
+    <div class="block-grid">
+      <div class="block-option" id="addTextBlock">
+        <i class="fas fa-font"></i>
+        Text
+      </div>
+      <div class="block-option" id="addImageBlock">
+        <i class="fas fa-image"></i>
+        Image
+      </div>
+      <div class="block-option" id="addButtonBlock">
+        <i class="fas fa-link"></i>
+        Button
+      </div>
+    </div>
+    <div class="block-modal-footer">
+      <button class="btn-secondary" style="padding:10px 32px; font-size:14px;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reusable Message Modal -->
+<div class="modal" id="messageModal">
+  <div class="modal-content">
+    <h3 id="messageModalTitle">Message</h3>
+    <p id="messageModalText" style="margin:20px 0; font-size:16px; line-height:1.6;"></p>
+    <div class="btn-grid">
+      <button class="btn-primary" id="messageYesBtn" style="display:none;">Yes</button>
+      <button class="btn-primary" id="messageOkBtn">OK</button>
+      <button class="btn-secondary" id="messageNoBtn" style="display:none;">No</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BACKEND_URL = 'https://sendm.onrender.com';
+
+const editorBody = document.getElementById('editorBody');
+const saveBtn = document.getElementById('saveBtn');
+const successToast = document.getElementById('successToast');
+const shareLinkEl = document.getElementById('shareLink');
+
+let currentImageTarget = null;
+let currentButton = null;
+let pageTitle = "My Landing Page";
+let currentShortId = null;
+
+function showMessage(title, text, onConfirm = null) {
+  document.getElementById('messageModalTitle').textContent = title;
+  document.getElementById('messageModalText').textContent = text;
+
+  const yesBtn = document.getElementById('messageYesBtn');
+  const noBtn = document.getElementById('messageNoBtn');
+  const okBtn = document.getElementById('messageOkBtn');
+
+  yesBtn.onclick = null;
+  noBtn.onclick = null;
+  okBtn.onclick = null;
+
+  if (onConfirm) {
+    yesBtn.style.display = 'block';
+    noBtn.style.display = 'block';
+    okBtn.style.display = 'none';
+
+    yesBtn.onclick = () => {
+      onConfirm();
+      document.getElementById('messageModal').classList.remove('show');
+    };
+    noBtn.onclick = () => {
+      document.getElementById('messageModal').classList.remove('show');
+    };
+  } else {
+    yesBtn.style.display = 'none';
+    noBtn.style.display = 'none';
+    okBtn.style.display = 'block';
+
+    // Special handling for page limit upgrade message
+    if (title === 'Upgrade Required') {
+      okBtn.onclick = () => {
+        document.getElementById('messageModal').classList.remove('show');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      };
+    } else {
+      okBtn.onclick = () => {
+        document.getElementById('messageModal').classList.remove('show');
+      };
+    }
+  }
+
+  document.getElementById('messageModal').classList.add('show');
+}
+
+function getToken() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('token') || localStorage.getItem('token');
+}
+
+function getShortId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('shortId');
+}
+
+function requireAuth() {
+  if (!getToken()) {
+    window.location.href = 'login.html';
+  }
+}
+
+function buildCleanConfig() {
+  const blocks = [];
+
+  const contentWrappers = editorBody.querySelectorAll('.content-wrapper');
+  for (let wrapper of contentWrappers) {
+    if (!wrapper || wrapper.id === 'addBlockBtn') continue;
+
+    const hasContent = wrapper.querySelector('.editable, .image-container, .cta-wrapper');
+    if (!hasContent) continue;
+
+    const textEl = wrapper.querySelector('h2.editable, p.editable');
+    if (textEl) {
+      const content = textEl.textContent.trim();
+      if (content && content !== 'New text') {
+        blocks.push({
+          type: 'text',
+          tag: textEl.tagName.toLowerCase(),
+          content
+        });
+        continue;
+      }
+    }
+
+    const imgContainer = wrapper.querySelector('.image-container');
+    if (imgContainer) {
+      const img = imgContainer.querySelector('img');
+      if (img && img.src && !img.src.includes('data:') && img.src.length > 20) {
+        blocks.push({
+          type: 'image',
+          src: img.src
+        });
+        continue;
+      }
+    }
+
+    const ctaWrapper = wrapper.querySelector('.cta-wrapper');
+    if (ctaWrapper) {
+      const a = ctaWrapper.querySelector('a.cta-button');
+      if (a) {
+        const text = a.textContent.trim();
+        let href = a.href;
+        if (href.startsWith('file://') || href.startsWith('about:') || href === '#' || href.length <= 5) {
+          href = '';
+        } else {
+          if (!href.startsWith('http')) {
+            href = 'https://' + href;
+          }
+        }
+        const lowerText = text.toLowerCase();
+        if (text && text.length > 2 && !lowerText.includes('x') && !lowerText.includes('add') && !lowerText.includes('delete') && !lowerText.includes('change') && !lowerText.includes('cancel') && !lowerText.includes('save')) {
+          blocks.push({
+            type: 'button',
+            text,
+            href
+          });
+        }
+      }
+    }
+  }
+
+  return {
+    blocks: blocks.filter(block => {
+      if (block.type === 'text' && block.content.length < 3) return false;
+      if (block.type === 'image' && (!block.src || block.src.length < 20)) return false;
+      if (block.type === 'button' && (block.text.length < 3 || block.text.toLowerCase().includes('editor') || !block.href.startsWith('http'))) return false;
+      return true;
+    }),
+    title: pageTitle
+  };
+}
+
+async function savePage() {
+  if (!getToken()) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  saveBtn.classList.add('saving');
+  saveBtn.innerHTML = 'Saving...';
+
+  const config = buildCleanConfig();
+  if (config.blocks.length === 0) {
+    showMessage('Empty Page', 'No valid content found. Add some text, images, or buttons before saving.');
+    saveBtn.classList.remove('saving');
+    saveBtn.innerHTML = 'Save Page';
+    return;
+  }
+
+  const payload = {
+    title: config.title,
+    config: { blocks: config.blocks }
+  };
+  if (currentShortId) payload.shortId = currentShortId;
+
+  try {
+    const res = await fetch(BACKEND_URL + '/api/pages/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      currentShortId = data.shortId;
+      const fullUrl = BACKEND_URL + '/p/' + data.shortId;
+      shareLinkEl.textContent = fullUrl;
+      shareLinkEl.href = fullUrl;
+      successToast.classList.add('show');
+      setTimeout(() => successToast.classList.remove('show'), 6000);
+    } else {
+      // Handle maximum pages limit with upgrade message + redirect
+      if (data.error && data.error.includes('Maximum landing pages limit reached')) {
+        showMessage('Upgrade Required', 'Maximum landing pages limit reached. Upgrade to premium to have unlimited pages.');
+      } else {
+        showMessage('Save Failed', data.error || 'An unknown error occurred.');
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage('Connection Error', 'Could not reach the backend. Check your internet connection.');
+  } finally {
+    saveBtn.classList.remove('saving');
+    saveBtn.innerHTML = 'Save Page';
+  }
+}
+
+saveBtn.addEventListener('click', savePage);
+
+// ... (rest of your original script remains 100% unchanged below)
+
+function renderBlock(block) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'content-wrapper';
+
+  if (block.type === 'text') {
+    const el = document.createElement(block.tag || 'p');
+    el.className = 'editable';
+    el.contentEditable = true;
+    el.textContent = block.content;
+    wrapper.appendChild(el);
+  } else if (block.type === 'image') {
+    const container = document.createElement('div');
+    container.className = 'image-container';
+    const img = document.createElement('img');
+    img.src = block.src;
+    img.alt = 'Hero';
+    img.className = 'landing-image';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'image-edit-btn';
+    editBtn.textContent = 'Change Image';
+    editBtn.onclick = () => openImageModal(img);
+    container.appendChild(img);
+    container.appendChild(editBtn);
+    wrapper.appendChild(container);
+  } else if (block.type === 'button') {
+    const ctaWrap = document.createElement('div');
+    ctaWrap.className = 'cta-wrapper';
+    const a = document.createElement('a');
+    a.href = block.href || 'https://example.com';
+    a.className = 'cta-button editable';
+    a.contentEditable = true;
+    a.textContent = block.text;
+    setupButton(a);
+    ctaWrap.appendChild(a);
+    wrapper.appendChild(ctaWrap);
+  }
+
+  return wrapper;
+}
+
+function makeRemovable(block) {
+  if (block.closest('.removable-block')) return;
+
+  const removableWrapper = document.createElement('div');
+  removableWrapper.className = 'removable-block';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'delete-block';
+  deleteBtn.innerHTML = '×';
+
+  deleteBtn.onclick = (e) => {
+    e.stopPropagation();
+    showMessage('Delete Block', 'Are you sure you want to delete this block?', () => {
+      removableWrapper.remove();
+    });
+  };
+
+  block.parentNode.insertBefore(removableWrapper, block);
+  removableWrapper.appendChild(block);
+  removableWrapper.appendChild(deleteBtn);
+}
+
+function openImageModal(img) {
+  currentImageTarget = img;
+  document.getElementById('imageModal').classList.add('show');
+  document.getElementById('imageLinkInput').focus();
+}
+
+function setupButton(btn) {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    currentButton = btn;
+    document.getElementById('buttonTextInput').value = btn.textContent.trim();
+    let displayHref = btn.href;
+    if (displayHref.startsWith('https://')) {
+      displayHref = displayHref.replace('https://', '');
+    }
+    document.getElementById('buttonLink').value = displayHref === 'example.com' ? '' : displayHref;
+    document.getElementById('linkModal').classList.add('show');
+  });
+}
+
+async function loadPageOrDefault() {
+  const shortId = getShortId();
+
+  if (!shortId) {
+    initDefaultEditor();
+    return;
+  }
+
+  try {
+    const res = await fetch(BACKEND_URL + '/api/page/' + shortId);
+    if (!res.ok) throw new Error('Page not found');
+
+    const data = await res.json();
+    currentShortId = data.shortId;
+    pageTitle = data.title || "My Landing Page";
+
+    editorBody.innerHTML = '';
+    data.config.blocks.forEach(block => {
+      const blockEl = renderBlock(block);
+      editorBody.appendChild(blockEl);
+      makeRemovable(blockEl);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.id = 'addBlockBtn';
+    addBtn.className = 'add-block-btn';
+    addBtn.textContent = 'Add New Block';
+    addBtn.onclick = () => document.getElementById('blockModal').classList.add('show');
+    editorBody.appendChild(addBtn);
+
+  } catch (err) {
+    console.error(err);
+    showMessage('Load Failed', 'Could not load the page. Starting with a new template.');
+    initDefaultEditor();
+  }
+}
+
+function initDefaultEditor() {
+  const initialBlocks = editorBody.querySelectorAll('.content-wrapper');
+  initialBlocks.forEach(makeRemovable);
+
+  document.querySelectorAll('.image-container').forEach(container => {
+    const img = container.querySelector('img');
+    const btn = container.querySelector('.image-edit-btn');
+    if (btn && img) btn.onclick = () => openImageModal(img);
+  });
+
+  const ctaButton = document.querySelector('.cta-button');
+  if (ctaButton) setupButton(ctaButton);
+
+  const addBtn = document.getElementById('addBlockBtn');
+  if (addBtn) addBtn.onclick = () => document.getElementById('blockModal').classList.add('show');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  requireAuth();
+  document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+  loadPageOrDefault();
+});
+
+document.getElementById('confirmImageBtn').onclick = () => {
+  const url = document.getElementById('imageLinkInput').value.trim();
+  if (url && /\.(jpg|jpeg|png|gif|webp|svg)/i.test(url)) {
+    currentImageTarget.src = url;
+    document.getElementById('imageModal').classList.remove('show');
+    document.getElementById('imageLinkInput').value = '';
+  } else {
+    showMessage('Invalid URL', 'Please enter a valid direct link to an image (jpg, png, gif, etc.).');
+  }
+};
+
+document.getElementById('saveLinkBtn').onclick = () => {
+  if (!currentButton) return;
+  const text = document.getElementById('buttonTextInput').value.trim() || 'Click Here';
+  const url = document.getElementById('buttonLink').value.trim();
+  let processedUrl = '#';
+  if (url && !url.startsWith('file://') && url !== '') {
+    processedUrl = url.startsWith('http') ? url : 'https://' + url;
+  }
+  currentButton.textContent = text;
+  currentButton.href = processedUrl;
+  document.getElementById('linkModal').classList.remove('show');
+};
+
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal') || e.target.classList.contains('btn-secondary')) {
+    document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+  }
+  if (e.target.isContentEditable) e.target.focus();
+});
+
+editorBody.addEventListener('input', (e) => {
+  if (e.target.tagName === 'H2') {
+    pageTitle = e.target.textContent.trim() || "My Landing Page";
+  }
+});
+
+document.getElementById('addTextBlock').onclick = () => {
+  const contentWrapper = document.createElement('div');
+  contentWrapper.className = 'content-wrapper';
+  const p = document.createElement('p');
+  p.className = 'editable';
+  p.contentEditable = true;
+  p.textContent = 'New text block — click to edit';
+  contentWrapper.appendChild(p);
+  const insertPoint = document.getElementById('addBlockBtn');
+  editorBody.insertBefore(contentWrapper, insertPoint);
+  makeRemovable(contentWrapper);
+  document.getElementById('blockModal').classList.remove('show');
+};
+
+document.getElementById('addImageBlock').onclick = () => {
+  const contentWrapper = document.createElement('div');
+  contentWrapper.className = 'content-wrapper';
+  const container = document.createElement('div');
+  container.className = 'image-container';
+  const img = document.createElement('img');
+  img.src = 'https://picsum.photos/600/400';
+  img.className = 'landing-image';
+  img.alt = 'Image';
+  const btn = document.createElement('button');
+  btn.className = 'image-edit-btn';
+  btn.textContent = 'Change Image';
+  btn.onclick = () => openImageModal(img);
+  container.appendChild(img);
+  container.appendChild(btn);
+  contentWrapper.appendChild(container);
+  const insertPoint = document.getElementById('addBlockBtn');
+  editorBody.insertBefore(contentWrapper, insertPoint);
+  makeRemovable(contentWrapper);
+  document.getElementById('blockModal').classList.remove('show');
+};
+
+document.getElementById('addButtonBlock').onclick = () => {
+  const contentWrapper = document.createElement('div');
+  contentWrapper.className = 'content-wrapper';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'cta-wrapper';
+  const a = document.createElement('a');
+  a.href = 'https://example.com';
+  a.className = 'cta-button editable';
+  a.contentEditable = true;
+  a.textContent = 'New Button';
+  setupButton(a);
+  wrapper.appendChild(a);
+  contentWrapper.appendChild(wrapper);
+  const insertPoint = document.getElementById('addBlockBtn');
+  editorBody.insertBefore(contentWrapper, insertPoint);
+  makeRemovable(contentWrapper);
+  document.getElementById('blockModal').classList.remove('show');
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forms and Landing Pages • Sendm</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1564C0;
+      --primary-light: #3485e5;
+      --gray-100: #f8f9fa;
+      --gray-600: #6c757d;
+      --gray-800: #343a40;
+      --success: #28a745;
+      --danger: #dc3545;
+      --danger-dark: #c82333;
+      --border: #e0e7ff;
+      --bg-light: #f9fbff;
+      --bg-white: #ffffff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
+      --radius: 12px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background:#f5f7fa;
+      color:var(--gray-800);
+      min-height:100vh;
+      display:flex;
+    }
+
+    .sidebar {
+      width:260px;
+      background:white;
+      box-shadow:2px 0 10px rgba(0,0,0,0.05);
+      padding:20px 0;
+      position:fixed;
+      height:100%;
+      z-index:1000;
+      transition:transform 0.3s ease;
+    }
+    .logo-sidebar {
+      padding:0 24px 30px;
+      font-size:24px;
+      font-weight:700;
+      color:var(--primary);
+    }
+    .nav-item {
+      display:flex; align-items:center;
+      padding:12px 24px;
+      color:var(--gray-800);
+      cursor:pointer;
+      transition:0.2s;
+      text-decoration:none;
+    }
+    .nav-item i { width:24px; margin-right:12px; }
+    .nav-item:hover { background:var(--gray-100); }
+    .nav-item.active {
+      background:#ebf3ff;
+      color:var(--primary);
+      border-left:4px solid var(--primary);
+      font-weight:600;
+    }
+
+    .overlay {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.4);
+      z-index:999;
+      opacity:0; visibility:hidden;
+      transition:opacity 0.3s;
+    }
+    .overlay.active { opacity:1; visibility:visible; }
+
+    .main {
+      flex:1;
+      margin-left:260px;
+      transition:margin-left 0.3s;
+    }
+
+    .topbar {
+      background:white;
+      padding:16px 30px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+      display:flex;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    .hamburger {
+      font-size:24px;
+      cursor:pointer;
+      color:var(--primary);
+      padding:8px;
+      border-radius:10px;
+      transition:background 0.2s;
+      display:none;
+    }
+    .hamburger:hover { background:var(--gray-100); }
+
+    .content {
+      padding:30px;
+      max-width:1400px;
+      margin:0 auto;
+      width:100%;
+    }
+
+    .page-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:30px;
+      flex-wrap:wrap;
+      gap:20px;
+    }
+    .page-title {
+      font-size:28px;
+      font-weight:700;
+      color:var(--gray-800);
+    }
+    .toggle-group {
+      display:flex;
+      background:var(--gray-100);
+      border-radius:var(--radius);
+      overflow:hidden;
+      border:1px solid var(--border);
+    }
+    .toggle-btn {
+      padding:12px 24px;
+      background:transparent;
+      border:none;
+      font-weight:600;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      transition:all 0.2s ease;
+    }
+    .toggle-btn.active {
+      background:var(--primary);
+      color:white;
+    }
+    .toggle-btn:hover:not(.active) {
+      background:rgba(21,100,192,0.1);
+    }
+
+    .create-btn {
+      background:var(--primary);
+      color:white;
+      border:none;
+      padding:12px 20px;
+      border-radius:var(--radius);
+      font-weight:600;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      transition:background 0.2s ease;
+      box-shadow:0 4px 15px rgba(21,100,192,0.3);
+    }
+    .create-btn:hover { background:var(--primary-light); }
+
+    .section {
+      background:white;
+      border-radius:var(--radius);
+      padding:24px;
+      margin-bottom:30px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.07);
+    }
+    .section h2 {
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:20px;
+      color:var(--gray-800);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .items-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+      gap:16px;
+    }
+
+    .item {
+      background:white;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+      transition:transform 0.2s ease;
+      display:flex;
+      flex-direction:column;
+    }
+    .item:hover { transform:translateY(-3px); }
+
+    .item-header {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .item-icon {
+      width:36px;
+      height:36px;
+      background:var(--primary);
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-size:16px;
+      flex-shrink:0;
+    }
+
+    .item-title-wrapper {
+      flex:1;
+      min-width:0;
+    }
+
+    .item-title {
+      font-size:15px;
+      font-weight:600;
+      margin:0;
+      color:var(--gray-800);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .item-meta {
+      color:var(--gray-600);
+      font-size:12px;
+      margin-top:4px;
+    }
+
+    .item-actions {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:auto;
+      padding-top:12px;
+      border-top:1px solid var(--border);
+    }
+    .btn {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:8px;
+      font-weight:600;
+      font-size:13px;
+      border:none;
+      cursor:pointer;
+      transition:all 0.2s ease;
+    }
+    .btn-copy { background:var(--bg-light); color:var(--gray-600); border:1px solid var(--border); }
+    .btn-copy:hover { background:var(--success); color:white; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-primary:hover { background:var(--primary-light); }
+    .btn-secondary { background:transparent; color:var(--gray-600); border:1px solid var(--border); }
+    .btn-secondary:hover { background:var(--bg-light); color:var(--primary); }
+    .btn-danger { background:var(--danger); color:white; font-size:12px; }
+    .btn-danger:hover { background:var(--danger-dark); }
+
+    .empty-state { text-align:center; padding:60px 20px; color:var(--gray-600); }
+    .empty-state i { font-size:48px; color:var(--border); margin-bottom:16px; display:block; }
+    .empty-state h3 { font-size:18px; font-weight:600; margin-bottom:10px; }
+    .empty-state p { margin-bottom:20px; font-size:15px; }
+    .empty-state a { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:var(--primary); color:white; text-decoration:none; border-radius:var(--radius); font-weight:600; }
+
+    .loading, .error { text-align:center; padding:50px 20px; color:var(--gray-600); font-size:16px; }
+    .loading i { font-size:36px; color:var(--primary); margin-bottom:12px; animation:spin 1.5s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; visibility:hidden; transition:all 0.3s ease; }
+    .modal-overlay.active { opacity:1; visibility:visible; }
+    .modal { background:white; border-radius:16px; width:90%; max-width:380px; box-shadow:var(--shadow-lg); overflow:hidden; transform:scale(0.95); transition:transform 0.3s ease; }
+    .modal-overlay.active .modal { transform:scale(1); }
+    .modal-header { padding:20px 24px 12px; text-align:center; }
+    .modal-header h3 { font-size:20px; font-weight:700; color:var(--gray-800); }
+    .modal-body { padding:8px 24px 24px; display:flex; flex-direction:column; gap:12px; }
+    .modal-btn { display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--bg-light); border:1px solid var(--border); border-radius:12px; font-weight:600; cursor:pointer; transition:all 0.2s ease; text-decoration:none; color:var(--gray-800); }
+    .modal-btn:hover { background:var(--primary); color:white; border-color:var(--primary); }
+    .modal-btn i { font-size:22px; color:var(--primary); width:32px; }
+    .modal-btn:hover i { color:white; }
+    .modal-btn strong { display:block; font-size:16px; margin-bottom:2px; }
+    .modal-btn small { font-size:13px; color:var(--gray-600); }
+    .modal-btn:hover small { color:white; }
+
+    @media (max-width: 992px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); }
+      .main { margin-left:0; }
+      .hamburger { display:block; }
+      .page-header { flex-direction:column; align-items:stretch; gap:16px; }
+      .toggle-group { width:100%; }
+      .toggle-btn { flex:1; justify-content:center; }
+      .items-grid { grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px; }
+      .item { padding:14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay" id="overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="logo-sidebar">Sendm</div>
+    <nav>
+      <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="broadcast.html" class="nav-item"><i class="fas fa-paper-plane"></i> Broadcasts</a>
+      <a href="contacts.html" class="nav-item"><i class="fas fa-users"></i> Contacts</a>
+      <a href="pages.html" class="nav-item active"><i class="fas fa-file-alt"></i> Forms and Landing Pages</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <i class="fas fa-bars hamburger" id="hamburger"></i>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <h1 class="page-title" id="currentTitle">Landing Pages</h1>
+        <div class="toggle-group">
+          <button class="toggle-btn active" onclick="showSection('pages')">
+            <i class="fas fa-globe"></i> Landing Pages
+          </button>
+          <button class="toggle-btn" onclick="showSection('forms')">
+            <i class="fas fa-file-alt"></i> Forms
+          </button>
+        </div>
+        <button class="create-btn" onclick="openCreateModal()">
+          <i class="fas fa-plus"></i> New
+        </button>
+      </div>
+
+      <div id="pagesSection" class="section" style="display: block;">
+        <h2><i class="fas fa-globe"></i> Landing Pages</h2>
+        <div class="loading"><i class="fas fa-circle-notch fa-spin"></i> Loading...</div>
+      </div>
+
+      <div id="formsSection" class="section" style="display: none;">
+        <h2><i class="fas fa-file-alt"></i> Forms</h2>
+        <div class="loading"><i class="fas fa-circle-notch fa-spin"></i> Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Create New</h3>
+      </div>
+      <div class="modal-body">
+        <a href="#" class="modal-btn" onclick="createItem('page'); return false;">
+          <i class="fas fa-globe"></i>
+          <div>
+            <strong>Landing Page</strong>
+            <small>Capture leads with a custom page</small>
+          </div>
+        </a>
+        <a href="#" class="modal-btn" onclick="createItem('form'); return false;">
+          <i class="fas fa-file-alt"></i>
+          <div>
+            <strong>Form</strong>
+            <small>Collect data with a simple form</small>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_URL = 'https://sendm.onrender.com';
+
+    document.getElementById('hamburger').onclick = () => {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('active');
+    };
+    document.getElementById('overlay').onclick = () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('active');
+    };
+
+    function getToken() {
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get('token');
+      return urlToken || localStorage.getItem('token');
+    }
+
+    function redirectToLogin() {
+      window.location.href = 'login.html';
+    }
+
+    function openCreateModal() {
+      const token = getToken();
+      if (!token) { redirectToLogin(); return; }
+      document.getElementById('createModal').classList.add('active');
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.remove('active');
+    }
+
+    function createItem(type) {
+      closeCreateModal();
+      const token = getToken();
+      if (!token) { redirectToLogin(); return; }
+      const url = type === 'form' ? 'form-editor.html' : 'editor.html';
+      window.location.href = url + '?token=' + token;
+    }
+
+    document.getElementById('createModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('createModal')) closeCreateModal();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeCreateModal();
+    });
+
+    function showSection(section) {
+      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.toggle-btn')[section === 'pages' ? 0 : 1].classList.add('active');
+      document.getElementById('pagesSection').style.display = section === 'pages' ? 'block' : 'none';
+      document.getElementById('formsSection').style.display = section === 'forms' ? 'block' : 'none';
+      document.getElementById('currentTitle').textContent = section === 'pages' ? 'Landing Pages' : 'Forms';
+    }
+
+    async function deleteItem(shortId, type) {
+      if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) return;
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      try {
+        const endpoint = type === 'page' ? '/api/pages/delete' : '/api/forms/delete';
+        const res = await fetch(BACKEND_URL + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ shortId })
+        });
+        if (res.ok) {
+          type === 'page' ? fetchPages() : fetchForms();
+        } else {
+          alert('Failed to delete item.');
+        }
+      } catch (err) {
+        alert('Error deleting item.');
+      }
+    }
+
+    function copyToClipboard(text, button) {
+      navigator.clipboard.writeText(text).then(() => {
+        const original = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.style.background = 'var(--success)';
+        button.style.color = 'white';
+        setTimeout(() => {
+          button.innerHTML = original;
+          button.style.background = '';
+          button.style.color = '';
+        }, 2000);
+      }).catch(() => alert('Failed to copy'));
+    }
+
+    async function fetchPages() {
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      try {
+        const res = await fetch(BACKEND_URL + '/api/pages', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+          if (res.status === 401) redirectToLogin();
+          throw new Error();
+        }
+        const data = await res.json();
+        const section = document.getElementById('pagesSection');
+        let content = section.querySelector('div:not(h2)') || section.querySelector('.loading');
+
+        let html = '';
+        if (data.pages && data.pages.length > 0) {
+          html += '<div class="items-grid">';
+          for (let i = 0; i < data.pages.length; i++) {
+            const page = data.pages[i];
+            html += '<div class="item">' +
+                      '<div class="item-header">' +
+                        '<div class="item-icon"><i class="fas fa-globe"></i></div>' +
+                        '<div class="item-title-wrapper">' +
+                          '<h3 class="item-title" title="' + page.title + '">' + page.title + '</h3>' +
+                          '<div class="item-meta">Short link ready</div>' +
+                        '</div>' +
+                      '</div>' +
+                      '<div class="item-actions">' +
+                        '<button class="btn btn-copy" onclick="copyToClipboard(\'' + page.url + '\', this)">' +
+                          '<i class="fas fa-copy"></i> Copy' +
+                        '</button>' +
+                        '<a href="' + page.url + '" class="btn btn-primary" target="_blank">' +
+                          '<i class="fas fa-eye"></i> View' +
+                        '</a>' +
+                        '<a href="editor.html?token=' + token + '&shortId=' + page.shortId + '" class="btn btn-secondary">' +
+                          '<i class="fas fa-edit"></i> Edit' +
+                        '</a>' +
+                        '<button class="btn btn-danger" onclick="deleteItem(\'' + page.shortId + '\', \'page\')">' +
+                          '<i class="fas fa-trash"></i> Del' +
+                        '</button>' +
+                      '</div>' +
+                    '</div>';
+          }
+          html += '</div>';
+        } else {
+          html = '<div class="empty-state">' +
+                   '<i class="fas fa-globe"></i>' +
+                   '<h3>No Landing Pages Yet</h3>' +
+                   '<p>Get started by creating your first landing page.</p>' +
+                   '<a href="editor.html?token=' + token + '">' +
+                     '<i class="fas fa-plus"></i> Create Landing Page' +
+                   '</a>' +
+                 '</div>';
+        }
+        content.outerHTML = html;
+      } catch (err) {
+        console.error(err);
+        const content = document.getElementById('pagesSection').querySelector('div:not(h2)');
+        if (content) content.outerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i> Failed to load pages.</div>';
+      }
+    }
+
+    async function fetchForms() {
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      try {
+        const res = await fetch(BACKEND_URL + '/api/forms', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+          if (res.status === 401) redirectToLogin();
+          throw new Error();
+        }
+        const data = await res.json();
+        const section = document.getElementById('formsSection');
+        let content = section.querySelector('div:not(h2)') || section.querySelector('.loading');
+
+        let html = '';
+        if (data.forms && data.forms.length > 0) {
+          html += '<div class="items-grid">';
+          for (let i = 0; i < data.forms.length; i++) {
+            const form = data.forms[i];
+            html += '<div class="item">' +
+                      '<div class="item-header">' +
+                        '<div class="item-icon"><i class="fas fa-file-alt"></i></div>' +
+                        '<div class="item-title-wrapper">' +
+                          '<h3 class="item-title" title="' + form.title + '">' + form.title + '</h3>' +
+                          '<div class="item-meta">Collect responses</div>' +
+                        '</div>' +
+                      '</div>' +
+                      '<div class="item-actions">' +
+                        '<button class="btn btn-copy" onclick="copyToClipboard(\'' + form.url + '\', this)">' +
+                          '<i class="fas fa-copy"></i> Copy' +
+                        '</button>' +
+                        '<a href="' + form.url + '" class="btn btn-primary" target="_blank">' +
+                          '<i class="fas fa-eye"></i> View' +
+                        '</a>' +
+                        '<a href="form-editor.html?token=' + token + '&shortId=' + form.shortId + '" class="btn btn-secondary">' +
+                          '<i class="fas fa-edit"></i> Edit' +
+                        '</a>' +
+                        '<button class="btn btn-danger" onclick="deleteItem(\'' + form.shortId + '\', \'form\')">' +
+                          '<i class="fas fa-trash"></i> Del' +
+                        '</button>' +
+                      '</div>' +
+                    '</div>';
+          }
+          html += '</div>';
+        } else {
+          html = '<div class="empty-state">' +
+                   '<i class="fas fa-file-alt"></i>' +
+                   '<h3>No Forms Yet</h3>' +
+                   '<p>Build your first form to start collecting data.</p>' +
+                   '<a href="form-editor.html?token=' + token + '">' +
+                     '<i class="fas fa-plus"></i> Create Form' +
+                   '</a>' +
+                 '</div>';
+        }
+        content.outerHTML = html;
+      } catch (err) {
+        console.error(err);
+        const content = document.getElementById('formsSection').querySelector('div:not(h2)');
+        if (content) content.outerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i> Failed to load forms.</div>';
+      }
+    }
+
+    window.onload = () => {
+      if (!getToken()) redirectToLogin();
+      fetchPages();
+      fetchForms();
+    };
+  </script>
+</body>
+</html>

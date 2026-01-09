@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Schedule • Sendm</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <style>
+    /* Your existing styles remain unchanged */
+    :root {
+      --primary: #1564C0;
+      --primary-light: #3485e5;
+      --gray-100: #f8f9fa;
+      --gray-600: #6c757d;
+      --gray-800: #343a40;
+      --success: #28a745;
+      --danger: #dc3545;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background:#f5f7fa;
+      color:#333;
+      min-height:100vh;
+      display:flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width:260px;
+      background:white;
+      box-shadow:2px 0 10px rgba(0,0,0,0.05);
+      padding:20px 0;
+      position:fixed;
+      height:100%;
+      z-index:1000;
+      transition:transform 0.3s ease;
+    }
+    .logo-sidebar {
+      padding:0 24px 30px;
+      font-size:24px;
+      font-weight:700;
+      color:var(--primary);
+      font-family: 'Poppins', sans-serif;
+    }
+    .nav-item {
+      display:flex; align-items:center;
+      padding:12px 24px;
+      color:var(--gray-800);
+      cursor:pointer;
+      transition:0.2s;
+      text-decoration:none;
+    }
+    .nav-item i { width:24px; margin-right:12px; }
+    .nav-item:hover { background:var(--gray-100); }
+    .nav-item.active {
+      background:#ebf3ff;
+      color:var(--primary);
+      border-left:4px solid var(--primary);
+      font-weight:600;
+    }
+
+    /* Overlay */
+    .overlay {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.4);
+      z-index:999;
+      opacity:0; visibility:hidden;
+      transition:opacity 0.3s;
+    }
+    .overlay.active { opacity:1; visibility:visible; }
+
+    /* Main */
+    .main {
+      flex:1;
+      margin-left:260px;
+      transition:margin-left 0.3s;
+    }
+
+    /* Topbar */
+    .topbar {
+      background:white;
+      padding:16px 30px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+      display:flex;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    .hamburger {
+      font-size:24px;
+      cursor:pointer;
+      color:var(--primary);
+      padding: 8px;
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .hamburger:hover {
+      background: var(--gray-100);
+    }
+
+    /* Page Title */
+    .page-title-header {
+      padding: 20px 24px 10px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Content */
+    .content {
+      padding: 0 24px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .schedule-section {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+      margin-bottom: 28px;
+    }
+
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .schedule-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .schedule-form { display: grid; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-weight: 600; color: var(--gray-800); font-size: 14px; }
+    .form-group input { padding: 12px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 16px; transition: border-color 0.2s; }
+    .form-group input:focus { outline: none; border-color: var(--primary); }
+
+    .select-container {
+      position: relative; border: 2px solid #e9ecef; border-radius: 12px; background: white; transition: all 0.2s ease; overflow: hidden;
+    }
+    .select-container:hover { border-color: var(--gray-600); }
+    .select-container:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(21, 100, 192, 0.1); }
+    .select-container select {
+      appearance: none; background: transparent; border: none; width: 100%; padding: 12px 40px 12px 12px; font-size: 16px; cursor: pointer;
+    }
+    .select-container::after {
+      content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%); color: var(--gray-600); pointer-events: none;
+    }
+
+    .editor-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .editor-btn { background: var(--gray-100); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--gray-800); transition: background 0.2s; }
+    .editor-btn:hover, .editor-btn.active { background: var(--primary); color: white; }
+
+    .editor-content {
+      height: 400px; max-width: 100%; border: 2px solid #e9ecef; border-radius: 12px; padding: 16px; font-size: 16px; line-height: 1.5;
+      overflow-y: auto; overflow-x: hidden; font-family: inherit; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;
+    }
+    .editor-content:focus { outline: none; border-color: var(--primary); }
+
+    .schedule-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; flex-wrap: wrap; }
+    .btn { padding: 12px 24px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; transition: all 0.3s ease; }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(21, 100, 192, 0.3); }
+    .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 12px 25px rgba(21, 100, 192, 0.4); }
+    .btn-secondary { background: var(--gray-100); color: var(--gray-800); }
+    .btn-secondary:hover { background: var(--gray-600); color: white; }
+    .btn-success { background: var(--success); color: white; box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3); }
+    .btn-success:hover { background: #218838; transform: translateY(-2px); box-shadow: 0 12px 25px rgba(40, 167, 69, 0.4); }
+
+    .recipient-selector { display: flex; gap: 12px; align-items: center; }
+    .recipient-selector label { font-weight: 500; }
+
+    .loading-state { text-align: center; padding: 60px 20px; color: #777; font-size: 18px; }
+    .loading-state i { font-size: 40px; margin-bottom: 16px; opacity: 0.6; animation: spin 1.5s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-content { background: white; padding: 30px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; }
+    .modal-icon { font-size: 50px; margin-bottom: 15px; }
+    .modal-success .modal-icon { color: var(--success); }
+    .modal-error .modal-icon { color: var(--danger); }
+    .modal-title { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+    .modal-message { font-size: 16px; color: #555; margin-bottom: 20px; line-height: 1.6; }
+    .modal-btn { padding: 12px 30px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+    .modal-success .modal-btn { background: var(--success); color: white; }
+    .modal-error .modal-btn { background: var(--danger); color: white; }
+    .modal-close-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; color: #999; cursor: pointer; }
+
+    @media (max-width: 992px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); }
+      .main { margin-left:0; }
+      .topbar { padding: 16px 20px; }
+      .content { padding: 0 20px 40px; }
+      .schedule-section { padding: 24px; }
+      .page-title-header { padding: 16px 20px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo-sidebar">Sendm</div>
+    <nav>
+      <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="broadcast.html" class="nav-item active"><i class="fas fa-paper-plane"></i> Broadcasts</a>
+      <a href="contacts.html" class="nav-item"><i class="fas fa-users"></i> Contacts</a>
+      <a href="pages.html" class="nav-item"><i class="fas fa-file-alt"></i> Forms and Landing Pages</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <i class="fas fa-bars hamburger" id="hamburger"></i>
+    </header>
+
+    <div class="content">
+      <div class="page-title-header" id="pageTitle">Schedule Broadcast</div>
+
+      <div class="schedule-section">
+        <div class="schedule-header">
+          <h2 id="sectionTitle">Schedule New TG Message</h2>
+          <div class="recipient-selector">
+            <label for="recipients">Send to:</label>
+            <div class="select-container">
+              <select id="recipients">
+                <option value="all">All Contacts</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="loadingState" class="loading-state" style="display:none;">
+          <i class="fas fa-circle-notch fa-spin"></i>
+          <div>Loading broadcast details...</div>
+        </div>
+
+        <form class="schedule-form" id="scheduleForm">
+          <div class="form-group">
+            <label for="schedule-time">Schedule Time</label>
+            <input type="datetime-local" id="schedule-time">
+          </div>
+          <div class="form-group">
+            <label>Message (supports bold, italic, links, lists)</label>
+            <div class="editor-toolbar">
+              <button type="button" class="editor-btn" data-command="bold"><i class="fas fa-bold"></i></button>
+              <button type="button" class="editor-btn" data-command="italic"><i class="fas fa-italic"></i></button>
+              <button type="button" class="editor-btn" data-command="underline"><i class="fas fa-underline"></i></button>
+              <button type="button" class="editor-btn" data-command="insertUnorderedList"><i class="fas fa-list-ul"></i></button>
+              <button type="button" class="editor-btn" data-command="insertOrderedList"><i class="fas fa-list-ol"></i></button>
+              <button type="button" class="editor-btn" data-command="createLink" title="Insert Link"><i class="fas fa-link"></i></button>
+            </div>
+            <div class="editor-content" id="editor" contenteditable="true"></div>
+          </div>
+          <div class="schedule-actions">
+            <button type="button" class="btn btn-secondary" onclick="history.back()">Cancel</button>
+            <button type="button" class="btn btn-success" id="send-now-btn">Send Now</button>
+            <button type="submit" class="btn btn-primary" id="schedule-btn">Schedule Message</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="statusModal" class="modal">
+    <div class="modal-content" id="modalContent">
+      <button class="modal-close-btn" onclick="closeModal()">×</button>
+      <div id="modalIcon" class="modal-icon"></div>
+      <div id="modalTitle" class="modal-title"></div>
+      <div id="modalMessage" class="modal-message"></div>
+      <button class="modal-btn" id="modalOkBtn">OK</button>
+    </div>
+  </div>
+
+  <script>
+    // Hamburger menu
+    document.getElementById('hamburger').onclick = () => {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('active');
+    };
+
+    document.getElementById('overlay').onclick = () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('active');
+    };
+
+    // Core functionality
+    const BACKEND_URL = 'https://sendm.onrender.com';
+
+    const editor = document.getElementById('editor');
+    const toolbarBtns = document.querySelectorAll('.editor-btn');
+    const sendNowBtn = document.getElementById('send-now-btn');
+    const scheduleBtn = document.getElementById('schedule-btn');
+    const modal = document.getElementById('statusModal');
+    const modalContent = document.getElementById('modalContent');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalOkBtn = document.getElementById('modalOkBtn');
+    const pageTitle = document.getElementById('pageTitle');
+    const sectionTitle = document.getElementById('sectionTitle');
+    const recipientsSelect = document.getElementById('recipients');
+    const scheduleTimeInput = document.getElementById('schedule-time');
+    const loadingState = document.getElementById('loadingState');
+    const scheduleForm = document.getElementById('scheduleForm');
+
+    let isEditMode = false;
+    let currentBroadcastId = null;
+
+    function getToken() {
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get('token');
+      return urlToken || localStorage.getItem('token');
+    }
+
+    function redirectToLogin() {
+      window.location.href = 'login.html';
+    }
+
+    function showModal(title, message, type = 'success', onOk = null) {
+      modalTitle.textContent = title;
+      modalMessage.innerHTML = message;
+      modalIcon.innerHTML = type === 'success' 
+        ? '<i class="fas fa-check-circle"></i>' 
+        : '<i class="fas fa-exclamation-circle"></i>';
+      modalContent.className = `modal-content modal-${type}`;
+      modal.style.display = 'flex';
+
+      // Remove any previous listener and add new one
+      modalOkBtn.onclick = () => {
+        closeModal();
+        if (onOk) onOk();
+      };
+
+      if (type === 'success') setTimeout(closeModal, 6000);
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Edit mode detection (unchanged)
+    const urlParams = new URLSearchParams(window.location.search);
+    const broadcastId = urlParams.get('broadcastId');
+
+    if (broadcastId) {
+      isEditMode = true;
+      currentBroadcastId = broadcastId;
+
+      pageTitle.textContent = 'Edit Scheduled Broadcast';
+      sectionTitle.textContent = 'Edit Scheduled Broadcast';
+      scheduleBtn.textContent = 'Update Broadcast';
+
+      async function loadBroadcastDetails() {
+        // ... (unchanged)
+      }
+
+      loadBroadcastDetails();
+    }
+
+    // Toolbar functionality (unchanged)
+    function updateToolbar() {
+      setTimeout(() => {
+        toolbarBtns.forEach(btn => {
+          const command = btn.dataset.command;
+          btn.classList.toggle('active', document.queryCommandState(command));
+        });
+      }, 0);
+    }
+
+    toolbarBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        editor.focus();
+        const command = btn.dataset.command;
+        if (command === 'createLink') {
+          const url = prompt('Enter URL (e.g., https://example.com):');
+          if (url) document.execCommand(command, false, url);
+        } else {
+          document.execCommand(command, false, null);
+        }
+        updateToolbar();
+      });
+    });
+
+    editor.addEventListener('input', updateToolbar);
+    editor.addEventListener('keyup', updateToolbar);
+    editor.addEventListener('mouseup', updateToolbar);
+
+    function getBroadcastData() {
+      return {
+        message: editor.innerHTML.trim(),
+        recipients: recipientsSelect.value
+      };
+    }
+
+    async function sendNow() {
+      const { message, recipients } = getBroadcastData();
+      if (!message) return showModal('Missing Message', 'Please enter a message', 'error');
+
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      sendNowBtn.disabled = true;
+      sendNowBtn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(BACKEND_URL + '/api/broadcast/now', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ message, recipients })
+        });
+
+        let data;
+        try { data = await res.json(); } catch { data = { error: 'Failed to parse response' }; }
+
+        if (data.error === 'Access token required' || data.error === 'Invalid token') {
+          return redirectToLogin();
+        }
+
+        if (res.ok && data.success) {
+          let successMessage = 'Message sent to ' + data.sent + ' contacts';
+          if (data.failed > 0) successMessage += ' (' + data.failed + ' failed)';
+          showModal('Sent!', successMessage);
+          editor.innerHTML = '';
+        } else {
+          // Modified: handle daily limit case
+          if (data.error && data.error.includes('Daily broadcast limit reached')) {
+            showModal(
+              'Daily Broadcast Limit Reached',
+              'You have reached your daily broadcast limit. Upgrade to a paid plan to send unlimited messages.',
+              'error',
+              () => { window.location.href = 'dashboard.html'; }
+            );
+          } else {
+            showModal('Error', data.error || 'Failed to send', 'error');
+          }
+        }
+      } catch (err) {
+        showModal('Error', 'Network error: ' + err.message, 'error');
+      } finally {
+        sendNowBtn.disabled = false;
+        sendNowBtn.textContent = 'Send Now';
+      }
+    }
+
+    async function handleSubmit(e) {
+      e?.preventDefault();
+
+      const { message, recipients } = getBroadcastData();
+      const scheduleTimeLocal = scheduleTimeInput.value;
+
+      if (!message) return showModal('Missing Message', 'Please enter a message', 'error');
+      if (!isEditMode && !scheduleTimeLocal) return showModal('Missing Time', 'Please select a time', 'error');
+
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      scheduleBtn.disabled = true;
+      scheduleBtn.textContent = 'Saving...';
+
+      try {
+        if (isEditMode) {
+          // ... (edit mode unchanged)
+          const localDate = new Date(scheduleTimeLocal);
+          const utcISO = localDate.toISOString();
+
+          const res = await fetch(BACKEND_URL + '/api/broadcast/scheduled/' + currentBroadcastId, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ message, scheduledTime: utcISO, recipients })
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (data.error === 'Access token required' || data.error === 'Invalid token') return redirectToLogin();
+
+          if (res.ok && data.success) {
+            showModal('Updated!', 'Broadcast updated successfully.');
+            setTimeout(() => history.back(), 2000);
+          } else {
+            showModal('Error', data.error || 'Failed to update', 'error');
+          }
+        } else {
+          let payload = { message, recipients };
+          if (scheduleTimeLocal) {
+            const localDate = new Date(scheduleTimeLocal);
+            payload.scheduledTime = localDate.toISOString();
+          } else {
+            payload.scheduledTime = 'now';
+          }
+
+          const res = await fetch(BACKEND_URL + '/api/broadcast/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (data.error === 'Access token required' || data.error === 'Invalid token') return redirectToLogin();
+
+          if (data.success) {
+            if (data.immediate) {
+              let msg = 'Message sent to ' + data.sent + ' contacts';
+              if (data.failed > 0) msg += ' (' + data.failed + ' failed)';
+              showModal('Sent Immediately!', msg);
+            } else {
+              showModal('Scheduled!', 'Broadcast scheduled successfully.');
+            }
+            editor.innerHTML = '';
+            scheduleTimeInput.value = '';
+          } else {
+            // Modified: handle daily limit case
+            if (data.error && data.error.includes('Daily broadcast limit reached')) {
+              showModal(
+                'Daily Broadcast Limit Reached',
+                'You have reached your daily broadcast limit. Upgrade to a paid plan to send unlimited messages.',
+                'error',
+                () => { window.location.href = 'dashboard.html'; }
+              );
+            } else {
+              showModal('Error', data.error || 'Failed to schedule', 'error');
+            }
+          }
+        }
+      } catch (err) {
+        showModal('Error', 'Network error: ' + err.message, 'error');
+      } finally {
+        scheduleBtn.disabled = false;
+        scheduleBtn.textContent = isEditMode ? 'Update Broadcast' : 'Schedule Message';
+      }
+    }
+
+    sendNowBtn.addEventListener('click', sendNow);
+    scheduleForm.addEventListener('submit', handleSubmit);
+
+    window.onload = () => {
+      if (!getToken()) redirectToLogin();
+    };
+  </script>
+</body>
+</html>

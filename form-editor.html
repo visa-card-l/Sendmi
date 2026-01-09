@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Form Editor • Sendm</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  :root {
+    --primary: #1564C0;
+    --primary-light: #3485e5;
+    --gray-100: #f8f9fa;
+    --gray-600: #6c757d;
+    --gray-800: #343a40;
+    --success: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+  }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    padding: 40px 20px;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .editor-container {
+    max-width: 480px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .save-bar {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.95);
+    padding: 12px 20px;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .save-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .save-btn:hover {
+    background: var(--primary-light);
+  }
+
+  .save-btn.saving {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .editor-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .editable {
+    position: relative;
+    min-height: 20px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.95);
+    transition: all 0.2s;
+    cursor: text;
+    margin-bottom: 16px;
+  }
+
+  .editable::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px dashed transparent;
+    border-radius: 10px;
+    pointer-events: none;
+    transition: border 0.2s;
+  }
+
+  .editable:hover::before,
+  .editable:focus-within::before {
+    border-color: rgba(21, 100, 192, 0.3);
+  }
+
+  .editable:focus-within::before {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(21, 100, 192, 0.15);
+  }
+
+  h2.editable {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+  }
+
+  p.editable {
+    font-size: 16px;
+    color: var(--gray-600);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 24px 0 12px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .welcome-editor {
+    background: #f8fbff;
+    border: 1px solid #d0e4ff;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 160px;
+    outline: none;
+  }
+
+  .welcome-editor:empty:before {
+    content: "Write a custom welcome message...";
+    color: #aaa;
+    font-style: italic;
+  }
+
+  .char-counter {
+    text-align: right;
+    font-size: 13px;
+    margin-top: 6px;
+    color: var(--gray-600);
+    font-weight: 500;
+  }
+
+  .char-counter.warning {
+    color: var(--warning);
+  }
+
+  .char-counter.danger {
+    color: var(--danger);
+  }
+
+  .preview-box {
+    background: #121212;
+    color: #e0e0e0;
+    padding: 16px;
+    border-radius: 12px;
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #333;
+  }
+
+  .preview-label {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin: 8px 0 4px 0;
+  }
+
+  .input-group {
+    margin-bottom: 20px;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 16px 18px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fafcff;
+    transition: all 0.2s;
+  }
+
+  .input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(21, 100, 192, 0.12);
+  }
+
+  .btn-wrapper {
+    margin-top: 10px;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 17px;
+    font-weight: 600;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(21, 100, 192, 0.3);
+  }
+
+  .submit-btn:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(21, 100, 192, 0.4);
+  }
+
+  .editor-body {
+    padding: 40px 32px;
+  }
+
+  .editor-hint {
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    color: var(--gray-600);
+    background: var(--gray-100);
+  }
+
+  .success-message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--success);
+    color: white;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-weight: 600;
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .success-message.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(10px);
+  }
+
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 18px;
+    color: var(--primary);
+    z-index: 200;
+  }
+
+  .loading-overlay i {
+    font-size: 40px;
+    margin-bottom: 16px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-overlay.show .modal {
+    transform: scale(1);
+  }
+
+  .modal-header {
+    padding: 20px 24px 12px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .modal-header.error   { color: var(--danger); }
+  .modal-header.warning { color: var(--warning); }
+  .modal-header.limit   { color: #000 !important; }
+
+  .modal-body {
+    padding: 0 24px 20px;
+    color: #444;
+    line-height: 1.5;
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    text-align: right;
+    background: #f8f9fa;
+  }
+
+  .modal-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .modal-btn:hover {
+    background: var(--primary-light);
+  }
+</style>
+</head>
+<body>
+
+<div class="editor-container">
+  <div class="loading-overlay" id="loadingOverlay">
+    <i class="fas fa-circle-notch"></i>
+    <div>Loading form...</div>
+  </div>
+
+  <div class="save-bar">
+    <button class="save-btn" id="saveBtn">Save Form</button>
+  </div>
+
+  <div class="editor-header">
+    <h1>Live Form Editor</h1>
+    <p style="margin-top:8px; opacity:0.9;">Click text to edit • New: Custom welcome message!</p>
+  </div>
+
+  <div class="editor-body">
+
+    <h2 class="editable" contenteditable="true" id="headerText">
+      Sign up for exclusive offers!
+    </h2>
+
+    <p class="editable" contenteditable="true" id="subheaderText">
+      Join our newsletter to receive the latest updates and promotions directly in your inbox.
+    </p>
+    <div class="char-counter" id="subheaderCharCounter">100 characters remaining</div>
+
+    <div class="input-group">
+      <input type="text" placeholder="Your full name" id="nameInput" disabled>
+    </div>
+
+    <div class="input-group">
+      <input type="text" placeholder="Email or phone no" id="emailInput" disabled>
+    </div>
+
+    <div class="btn-wrapper">
+      <button class="submit-btn" id="submitBtn" disabled>Subscribe Now</button>
+    </div>
+
+    <div class="section-title">Custom Welcome Message (sent after confirmation)</div>
+    
+    <div contenteditable="true" id="welcomeMessage" class="welcome-editor editable">
+      <b>Hey {name}!</b><br><br>
+      Thanks for joining us 🎉<br><br>
+      You'll get exclusive updates soon.<br><br>
+      Feel free to reach out!
+    </div>
+
+    <div class="char-counter" id="charCounter"></div>
+
+    <div class="preview-label">Preview in Telegram:</div>
+    <div class="preview-box" id="welcomePreview">
+      <b>Hey John Doe!</b><br><br>
+      Thanks for joining us 🎉<br><br>
+      You'll get exclusive updates soon.<br><br>
+      Feel free to reach out!
+    </div>
+
+  </div>
+
+  <div class="editor-hint">
+    Header, subheader, and welcome message are fully editable • Form fields are fixed
+  </div>
+</div>
+
+<div class="success-message" id="successToast">
+  Form saved successfully! <a href="#" id="shareLink" target="_blank" style="color:white;text-decoration:underline;">View Live Form</a>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header" id="modalTitle">Error</div>
+    <div class="modal-body" id="modalMessage">Message</div>
+    <div class="modal-footer">
+      <button class="modal-btn" id="modalClose">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BACKEND_URL = 'https://sendm.onrender.com';
+  const WELCOME_MAX_CHARS = 200;
+  const SUBHEADER_MAX_CHARS = 200;
+  const WELCOME_NEAR_LIMIT = WELCOME_MAX_CHARS * 0.9;
+  const SUBHEADER_NEAR_LIMIT = SUBHEADER_MAX_CHARS * 0.9;
+
+  const saveBtn = document.getElementById('saveBtn');
+  const successToast = document.getElementById('successToast');
+  const shareLinkEl = document.getElementById('shareLink');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const welcomeEditor = document.getElementById('welcomeMessage');
+  const welcomePreview = document.getElementById('welcomePreview');
+  const charCounter = document.getElementById('charCounter');
+  const subheaderText = document.getElementById('subheaderText');
+  const subheaderCharCounter = document.getElementById('subheaderCharCounter');
+
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalMessage = document.getElementById('modalMessage');
+  const modalClose = document.getElementById('modalClose');
+
+  let currentShortId = null;
+
+  function showModal({ title = 'Notice', message = '', type = 'error', onClose = null }) {
+    modalTitle.textContent = title;
+    modalTitle.className = 'modal-header ' + type;
+    modalMessage.innerHTML = message;
+    modalOverlay.classList.add('show');
+
+    modalClose.replaceWith(modalClose.cloneNode(true));
+    const newCloseBtn = document.getElementById('modalClose');
+    
+    newCloseBtn.addEventListener('click', () => {
+      hideModal();
+      if (onClose) onClose();
+    });
+  }
+
+  function hideModal() {
+    modalOverlay.classList.remove('show');
+  }
+
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) hideModal();
+  });
+
+  function getUrlParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+  }
+
+  function getToken() {
+    return getUrlParam('token') || localStorage.getItem('token');
+  }
+
+  function requireAuth() {
+    if (!getToken()) {
+      window.location.href = 'login.html';
+    }
+  }
+
+  // === Welcome Message: Counter + Hard Limit Enforcement ===
+  function updateWelcomeCharCount() {
+    let text = welcomeEditor.innerText || '';
+    let count = text.length;
+
+    if (count > WELCOME_MAX_CHARS) {
+      const selection = window.getSelection();
+      let range;
+      if (selection.rangeCount > 0) range = selection.getRangeAt(0);
+
+      welcomeEditor.innerText = text.slice(0, WELCOME_MAX_CHARS);
+      text = welcomeEditor.innerText;
+      count = WELCOME_MAX_CHARS;
+
+      if (range) {
+        const newRange = document.createRange();
+        const newSel = window.getSelection();
+        newRange.setStart(welcomeEditor.childNodes[welcomeEditor.childNodes.length - 1] || welcomeEditor, text.length);
+        newRange.collapse(true);
+        newSel.removeAllRanges();
+        newSel.addRange(newRange);
+      }
+    }
+
+    let message = '';
+    let className = '';
+
+    if (count === 0) {
+      message = 'Empty message';
+    } else if (count >= WELCOME_MAX_CHARS) {
+      message = 'Limit reached (300 characters)';
+      className = 'danger';
+    } else if (count > WELCOME_NEAR_LIMIT) {
+      message = `${WELCOME_MAX_CHARS - count} characters left`;
+      className = 'warning';
+    } else {
+      message = `${WELCOME_MAX_CHARS - count} characters remaining`;
+    }
+
+    charCounter.textContent = message;
+    charCounter.className = 'char-counter ' + className;
+  }
+
+  // === Subheader: Counter + Hard Limit Enforcement ===
+  function updateSubheaderCharCount() {
+    let text = subheaderText.innerText || '';
+    let count = text.length;
+
+    if (count > SUBHEADER_MAX_CHARS) {
+      const selection = window.getSelection();
+      let range;
+      if (selection.rangeCount > 0) range = selection.getRangeAt(0);
+
+      subheaderText.innerText = text.slice(0, SUBHEADER_MAX_CHARS);
+      text = subheaderText.innerText;
+      count = SUBHEADER_MAX_CHARS;
+
+      if (range) {
+        const newRange = document.createRange();
+        const newSel = window.getSelection();
+        const node = subheaderText.childNodes[0] || subheaderText;
+        newRange.setStart(node, Math.min(range.startOffset, SUBHEADER_MAX_CHARS));
+        newRange.collapse(true);
+        newSel.removeAllRanges();
+        newSel.addRange(newRange);
+      }
+    }
+
+    let message = '';
+    let className = '';
+
+    if (count === 0) {
+      message = 'Empty subheader';
+    } else if (count >= SUBHEADER_MAX_CHARS) {
+      message = 'Limit reached (100 characters)';
+      className = 'danger';
+    } else if (count > SUBHEADER_NEAR_LIMIT) {
+      message = `${SUBHEADER_MAX_CHARS - count} characters left`;
+      className = 'warning';
+    } else {
+      message = `${SUBHEADER_MAX_CHARS - count} characters remaining`;
+    }
+
+    subheaderCharCounter.textContent = message;
+    subheaderCharCounter.className = 'char-counter ' + className;
+  }
+
+  // Prevent typing when limit is reached (allows navigation, delete, etc.)
+  function enforceLimitOnKeydown(e, element, max) {
+    const text = element.innerText || '';
+    if (text.length < max) return;
+
+    const allowedKeys = [
+      'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+      'Tab', 'Home', 'End'
+    ];
+
+    if (allowedKeys.includes(e.key)) return;
+    if (e.ctrlKey || e.metaKey) return; // Allow copy/paste shortcuts, undo, etc.
+
+    // Allow deleting selected text
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0 && !selection.getRangeAt(0).collapsed) return;
+
+    e.preventDefault();
+  }
+
+  welcomeEditor.addEventListener('keydown', (e) => enforceLimitOnKeydown(e, welcomeEditor, WELCOME_MAX_CHARS));
+  subheaderText.addEventListener('keydown', (e) => enforceLimitOnKeydown(e, subheaderText, SUBHEADER_MAX_CHARS));
+
+  // Paste handling – truncate to limit
+  welcomeEditor.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    const current = welcomeEditor.innerText || '';
+    const newText = (current + pasted).slice(0, WELCOME_MAX_CHARS);
+    const added = newText.slice(current.length);
+
+    document.execCommand('insertText', false, added);
+    setTimeout(() => {
+      updateWelcomeCharCount();
+      updatePreview();
+    }, 0);
+  });
+
+  subheaderText.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    const current = subheaderText.innerText || '';
+    const newText = (current + pasted).slice(0, SUBHEADER_MAX_CHARS);
+    const added = newText.slice(current.length);
+
+    document.execCommand('insertText', false, added);
+    setTimeout(updateSubheaderCharCount, 0);
+  });
+
+  // Regular input updates
+  welcomeEditor.addEventListener('input', () => {
+    updatePreview();
+    updateWelcomeCharCount();
+  });
+
+  subheaderText.addEventListener('input', updateSubheaderCharCount);
+
+  function updatePreview() {
+    let html = welcomeEditor.innerHTML
+      .replace(/{name}/gi, '<b>John Doe</b>')
+      .replace(/{contact}/gi, 'john@example.com');
+
+    welcomePreview.innerHTML = html || '<i style="color:#666">No welcome message set</i>';
+  }
+
+  function applyState(data) {
+    if (!data) return;
+
+    if (data.state) {
+      if (data.state.headerText) document.getElementById('headerText').textContent = data.state.headerText;
+      if (data.state.subheaderText) document.getElementById('subheaderText').textContent = data.state.subheaderText;
+    }
+
+    let welcomeHtml = '';
+    if (data.welcomeMessage) {
+      welcomeHtml = data.welcomeMessage.replace(/\n/g, '<br>');
+    } else if (data.state && data.state.welcomeMessage) {
+      welcomeHtml = data.state.welcomeMessage.replace(/\n/g, '<br>');
+    } else {
+      welcomeHtml = `<b>Hey {name}!</b><br><br>Thanks for joining us 🎉<br><br>You'll get exclusive updates soon.<br><br>Feel free to reach out!`;
+    }
+
+    welcomeEditor.innerHTML = welcomeHtml;
+    updatePreview();
+    updateWelcomeCharCount();
+    updateSubheaderCharCount();
+  }
+
+  function buildPayload() {
+    let welcomeText = welcomeEditor.innerHTML.trim();
+    welcomeText = welcomeText
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<div>/gi, '\n')
+      .replace(/<\/div>/gi, '')
+      .replace(/&nbsp;/g, ' ');
+
+    const publicState = {
+      headerText: document.getElementById('headerText').textContent.trim() || 'Sign up for exclusive offers!',
+      subheaderText: document.getElementById('subheaderText').textContent.trim() || 'Join our newsletter...',
+      buttonText: 'Subscribe Now',
+      placeholders: [
+        { placeholder: 'Your full name' },
+        { placeholder: 'Email or phone no' }
+      ]
+    };
+
+    const title = publicState.headerText || 'Untitled Form';
+
+    return {
+      title: title,
+      state: publicState,
+      welcomeMessage: welcomeText || ''
+    };
+  }
+
+  async function loadExistingForm() {
+    const shortId = getUrlParam('shortId');
+    if (!shortId) {
+      loadingOverlay.style.display = 'none';
+      updatePreview();
+      updateWelcomeCharCount();
+      updateSubheaderCharCount();
+      return;
+    }
+
+    try {
+      const res = await fetch(BACKEND_URL + '/api/form/' + shortId);
+      if (!res.ok) throw new Error('Form not found');
+
+      const data = await res.json();
+      currentShortId = data.shortId;
+      applyState(data);
+
+      document.title = 'Edit: ' + (data.title || 'Untitled Form') + ' • Sendm';
+
+    } catch (err) {
+      console.error(err);
+      showModal({
+        title: 'Load Failed',
+        message: 'Failed to load form: ' + err.message + '. Starting with a fresh form.',
+        type: 'error'
+      });
+    } finally {
+      loadingOverlay.style.display = 'none';
+    }
+  }
+
+  async function saveForm() {
+    if (!getToken()) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const welcomeLength = welcomeEditor.innerText.length;
+    const subheaderLength = subheaderText.innerText.length;
+
+    if (welcomeLength > WELCOME_MAX_CHARS) {
+      showModal({
+        title: 'Welcome Message Too Long',
+        message: `Current length: \( {welcomeLength}. Maximum allowed: \){WELCOME_MAX_CHARS}.`,
+        type: 'warning'
+      });
+      return;
+    }
+
+    if (subheaderLength > SUBHEADER_MAX_CHARS) {
+      showModal({
+        title: 'Subheader Too Long',
+        message: `Current length: \( {subheaderLength}. Maximum allowed: \){SUBHEADER_MAX_CHARS}.`,
+        type: 'warning'
+      });
+      return;
+    }
+
+    saveBtn.classList.add('saving');
+    saveBtn.innerHTML = 'Saving...';
+
+    const payload = buildPayload();
+
+    if (currentShortId) {
+      payload.shortId = currentShortId;
+    }
+
+    try {
+      const res = await fetch(BACKEND_URL + '/api/forms/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        currentShortId = data.shortId;
+        const liveUrl = BACKEND_URL + '/f/' + data.shortId;
+        shareLinkEl.href = liveUrl;
+        shareLinkEl.textContent = 'View Live Form';
+        successToast.classList.add('show');
+        setTimeout(() => successToast.classList.remove('show'), 6000);
+      } else {
+        if (data.error && data.error.includes('Maximum forms limit reached')) {
+          showModal({
+            title: 'Maximum forms limit reached.',
+            message: 'Upgrade to premium to get unlimited forms and more features.',
+            type: 'limit',
+            onClose: () => window.location.href = 'dashboard.html'
+          });
+        } else {
+          showModal({
+            title: 'Save Failed',
+            message: data.error || 'Unknown error occurred.',
+            type: 'error'
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showModal({
+        title: 'Connection Error',
+        message: 'Could not reach the server. Please check your internet connection.',
+        type: 'error'
+      });
+    } finally {
+      saveBtn.classList.remove('saving');
+      saveBtn.innerHTML = 'Save Form';
+    }
+  }
+
+  saveBtn.addEventListener('click', saveForm);
+
+  document.querySelectorAll('[contenteditable=true]').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.focus();
+    });
+  });
+
+  document.querySelectorAll('button:not(#saveBtn)').forEach(btn => {
+    btn.addEventListener('click', e => e.preventDefault());
+  });
+
+  window.addEventListener('load', () => {
+    requireAuth();
+    loadExistingForm();
+  });
+</script>
+
+</body>
+</html>

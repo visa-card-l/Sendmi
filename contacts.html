@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contacts • Sendm</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #1564C0;
+      --primary-light: #3485e5;
+      --gray-100: #f8f9fa;
+      --gray-600: #6c757d;
+      --gray-800: #343a40;
+      --danger: #dc3545;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background:#f5f7fa;
+      color:#333;
+      min-height:100vh;
+      display:flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width:260px;
+      background:white;
+      box-shadow:2px 0 10px rgba(0,0,0,0.05);
+      padding:20px 0;
+      position:fixed;
+      height:100%;
+      z-index:1000;
+      transition:transform 0.3s ease;
+    }
+    .logo-sidebar {
+      padding:0 24px 30px;
+      font-size:24px;
+      font-weight:700;
+      color:var(--primary);
+    }
+    .nav-item {
+      display:flex; align-items:center;
+      padding:12px 24px;
+      color:var(--gray-800);
+      cursor:pointer;
+      transition:0.2s;
+      text-decoration:none;
+    }
+    .nav-item i { width:24px; margin-right:12px; }
+    .nav-item:hover { background:var(--gray-100); }
+    .nav-item.active {
+      background:#ebf3ff;
+      color:var(--primary);
+      border-left:4px solid var(--primary);
+      font-weight:600;
+    }
+
+    /* Overlay */
+    .overlay {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.4);
+      z-index:999;
+      opacity:0; visibility:hidden;
+      transition:opacity 0.3s;
+    }
+    .overlay.active { opacity:1; visibility:visible; }
+
+    /* Main */
+    .main {
+      flex:1;
+      margin-left:260px;
+      transition:margin-left 0.3s;
+    }
+
+    /* Topbar */
+    .topbar {
+      background:white;
+      padding:16px 30px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    .hamburger { font-size:24px; cursor:pointer; color:var(--primary); display:none; }
+    .user-info { display:flex; align-items:center; gap:14px; font-weight:500; }
+    .avatar {
+      width:40px; height:40px;
+      border-radius:50%;
+      background:var(--primary);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:bold;
+    }
+
+    /* Content */
+    .content {
+      padding:30px;
+      max-width:1100px;
+      margin:0 auto;
+      width:100%;
+    }
+    .page-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+    .page-title {
+      font-size:28px;
+      font-weight:700;
+      color:var(--gray-800);
+    }
+
+    /* Action Bar */
+    .action-bar {
+      background:white;
+      padding:16px 20px;
+      border-radius:12px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.06);
+      margin-bottom:20px;
+      display:none;
+      align-items:center;
+      gap:16px;
+      font-weight:600;
+      color:var(--gray-800);
+    }
+    .action-bar.show { display:flex; animation:fadeIn 0.3s; }
+    .select-count { color:var(--primary); font-weight:700; }
+
+    .action-dropdown {
+      position:relative;
+      display:inline-block;
+    }
+    .action-btn {
+      background:transparent;
+      border:1px solid #ddd;
+      padding:10px 20px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .dropdown-content {
+      display:none;
+      position:absolute;
+      background:white;
+      min-width:190px;
+      box-shadow:0 8px 25px rgba(0,0,0,0.15);
+      border-radius:8px;
+      z-index:10;
+      top:100%;
+      right:0;
+      margin-top:8px;
+    }
+    .dropdown-content a {
+      color:#333;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+      border-bottom:1px solid #eee;
+      cursor:pointer;
+    }
+    .dropdown-content a:last-child { border:none; }
+    .dropdown-content a:hover { background:#f0f7ff; }
+    .dropdown-content a.delete { color:var(--danger); }
+    .action-dropdown:hover .dropdown-content { display:block; }
+
+    /* Table */
+    .card {
+      background:white;
+      border-radius:12px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.07);
+      overflow:hidden;
+    }
+    table { width:100%; border-collapse:collapse; }
+    th {
+      background:#f8f9fa;
+      padding:16px 20px;
+      text-align:left;
+      font-weight:600;
+      color:var(--gray-800);
+      font-size:14px;
+      border-bottom:2px solid #eee;
+    }
+    td { padding:16px 20px; border-bottom:1px solid #eee; font-size:15px; }
+    tr:hover { background:#f8fbff; }
+    .status {
+      padding:5px 12px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:600;
+    }
+    .status.active { background:#d4edda; color:#155724; }
+    .status.inactive { background:#f8d7da; color:#721c24; }
+    .status.unsubscribed { background:#e2e3e5; color:#6c757d; }
+
+    input[type="checkbox"] {
+      transform:scale(1.3);
+      cursor:pointer;
+      accent-color:var(--primary);
+    }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 992px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); }
+      .main { margin-left:0; }
+      .hamburger { display:block; }
+      .page-header { flex-direction:column; align-items:flex-start; gap:16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo-sidebar">Sendm</div>
+    <nav>
+      <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="broadcast.html" class="nav-item"><i class="fas fa-paper-plane"></i> Broadcasts</a>
+      <a href="contacts.html" class="nav-item active"><i class="fas fa-users"></i> Contacts</a>
+      <a href="pages.html" class="nav-item"><i class="fas fa-file-alt"></i> Forms and Landing Pages</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <i class="fas fa-bars hamburger" id="hamburger"></i>
+      <div class="user-info">
+        <span id="userName">Loading...</span>
+        <div class="avatar" id="userAvatar">?</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <h1 class="page-title">Contacts</h1>
+      </div>
+
+      <!-- Action Bar with Dropdown -->
+      <div class="action-bar" id="actionBar">
+        <span><span class="select-count" id="selectedCount">0</span> contacts selected</span>
+        <div class="action-dropdown">
+          <button class="action-btn">Actions <i class="fas fa-chevron-down"></i></button>
+          <div class="dropdown-content">
+            <a class="delete" id="bulkDeleteBtn"><i class="fas fa-trash"></i> Delete</a>
+            <a href="#" onclick="copyContacts(event)"><i class="fas fa-copy"></i> Copy Contacts</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contacts Table -->
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAll"></th>
+              <th>Name</th>
+              <th>Email or Number</th>
+              <th>Status</th>
+              <th>Subscribed</th>
+            </tr>
+          </thead>
+          <tbody id="contactsBody">
+            <tr>
+              <td colspan="5" style="text-align:center; padding:80px; color:#888;">
+                Loading contacts...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_URL = 'https://sendm.onrender.com'; // Change to 'http://localhost:3000' for local testing
+
+    function getToken() {
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get('token');
+      return urlToken || localStorage.getItem('token');
+    }
+
+    function redirectToLogin() {
+      window.location.href = 'login.html';
+    }
+
+    async function loadUserInfo() {
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      try {
+        const res = await fetch(BACKEND_URL + '/api/auth/me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.status === 401 || res.status === 403) return redirectToLogin();
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const name = data.user.fullName || 'User';
+        document.getElementById('userName').textContent = 'Welcome, ' + name;
+        const initials = name.split(' ').map(w => w[0] || '').join('').slice(0,2).toUpperCase() || '?';
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (err) {
+        document.getElementById('userName').textContent = 'Welcome';
+      }
+    }
+
+    async function loadContacts() {
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      const tbody = document.getElementById('contactsBody');
+
+      try {
+        const res = await fetch(BACKEND_URL + '/api/contacts', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.status === 401 || res.status === 403) return redirectToLogin();
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+
+        if (!data.contacts || data.contacts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:80px;color:#888;">No contacts yet.<br><br>Create a form and start collecting!</td></tr>';
+          return;
+        }
+
+        let rows = '';
+        for (const c of data.contacts) {
+          let statusText, statusClass;
+
+          if (c.status === 'subscribed') {
+            statusText = 'Subscribed';
+            statusClass = 'active';
+          } else if (c.status === 'unsubscribed') {
+            statusText = 'Unsubscribed';
+            statusClass = 'unsubscribed';
+          } else {
+            statusText = 'Pending';
+            statusClass = 'inactive';
+          }
+
+          const subscribedDate = c.subscribedAt ? new Date(c.subscribedAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : '—';
+
+          rows += '<tr>' +
+            '<td><input type="checkbox" class="contact-check" data-contact="' + escapeHtml(c.contact) + '"></td>' +
+            '<td>' + escapeHtml(c.name) + '</td>' +
+            '<td>' + escapeHtml(c.contact) + '</td>' +
+            '<td><span class="status ' + statusClass + '">' + statusText + '</span></td>' +
+            '<td>' + subscribedDate + '</td>' +
+            '</tr>';
+        }
+        tbody.innerHTML = rows;
+
+        attachCheckboxListeners();
+
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:80px;color:red;">Error loading contacts.</td></tr>';
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function attachCheckboxListeners() {
+      const checkboxes = document.querySelectorAll('.contact-check');
+      const selectAll = document.getElementById('selectAll');
+      const actionBar = document.getElementById('actionBar');
+      const selectedCount = document.getElementById('selectedCount');
+
+      function updateSelection() {
+        const checkedCount = document.querySelectorAll('.contact-check:checked').length;
+        selectedCount.textContent = checkedCount;
+        actionBar.classList.toggle('show', checkedCount > 0);
+        selectAll.checked = checkedCount === checkboxes.length && checkboxes.length > 0;
+      }
+
+      selectAll.onclick = function() {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateSelection();
+      };
+
+      checkboxes.forEach(cb => cb.onchange = updateSelection);
+      updateSelection();
+    }
+
+    function copyContacts(e) {
+      e.preventDefault();
+      const selected = document.querySelectorAll('.contact-check:checked');
+      const contacts = Array.from(selected).map(cb => cb.dataset.contact);
+      if (contacts.length === 0) return;
+      navigator.clipboard.writeText(contacts.join(', ')).then(() => {
+        alert(`Copied ${contacts.length} contact(s) to clipboard!`);
+      });
+    }
+
+    async function bulkDelete() {
+      const selected = document.querySelectorAll('.contact-check:checked');
+      const contactsToDelete = Array.from(selected).map(cb => cb.dataset.contact);
+
+      if (contactsToDelete.length === 0) return;
+
+      if (!confirm(`Delete ${contactsToDelete.length} contact(s)? This action cannot be undone.`)) {
+        return;
+      }
+
+      const token = getToken();
+      if (!token) return redirectToLogin();
+
+      try {
+        const res = await fetch(BACKEND_URL + '/api/contacts/delete', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ contacts: contactsToDelete })
+        });
+
+        if (res.status === 401 || res.status === 403) return redirectToLogin();
+        if (!res.ok) throw new Error('Failed to delete contacts');
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert(`Successfully deleted ${data.deletedCount} contact(s).`);
+          loadContacts();
+        } else {
+          alert('Deletion failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Error deleting contacts: ' + err.message);
+      }
+    }
+
+    // Hamburger menu
+    document.getElementById('hamburger').onclick = () => {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('active');
+    };
+
+    document.getElementById('overlay').onclick = () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('active');
+    };
+
+    // Delete button handler
+    document.getElementById('bulkDeleteBtn').onclick = function(e) {
+      e.preventDefault();
+      bulkDelete();
+    };
+
+    window.onload = () => {
+      if (!getToken()) redirectToLogin();
+      loadUserInfo();
+      loadContacts();
+    };
+  </script>
+</body>
+</html> 
