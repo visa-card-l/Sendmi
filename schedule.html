@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
   <style>
-    /* Your existing styles remain unchanged */
     :root {
       --primary: #1564C0;
       --primary-light: #3485e5;
@@ -342,7 +341,7 @@
       modalContent.className = `modal-content modal-${type}`;
       modal.style.display = 'flex';
 
-      // Remove any previous listener and add new one
+      // Set OK button handler (overrides previous)
       modalOkBtn.onclick = () => {
         closeModal();
         if (onOk) onOk();
@@ -359,7 +358,7 @@
       if (e.target === modal) closeModal();
     });
 
-    // Edit mode detection (unchanged)
+    // Edit mode detection
     const urlParams = new URLSearchParams(window.location.search);
     const broadcastId = urlParams.get('broadcastId');
 
@@ -372,13 +371,46 @@
       scheduleBtn.textContent = 'Update Broadcast';
 
       async function loadBroadcastDetails() {
-        // ... (unchanged)
+        const token = getToken();
+        if (!token) return redirectToLogin();
+
+        loadingState.style.display = 'block';
+        scheduleForm.style.display = 'none';
+
+        try {
+          const res = await fetch(BACKEND_URL + '/api/broadcast/scheduled/' + broadcastId + '/details', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+
+          const data = await res.json().catch(() => ({ error: 'Failed to parse response' }));
+
+          if (data.error === 'Access token required' || data.error === 'Invalid token') {
+            return redirectToLogin();
+          }
+
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to load broadcast');
+          }
+
+          if (!data.success) throw new Error('Invalid response');
+
+          editor.innerHTML = data.message || '';
+          scheduleTimeInput.value = data.scheduledTime;
+          recipientsSelect.value = data.recipients || 'all';
+
+          updateToolbar();
+        } catch (err) {
+          showModal('Error', err.message || 'Could not load broadcast details.', 'error');
+          console.error(err);
+        } finally {
+          loadingState.style.display = 'none';
+          scheduleForm.style.display = 'grid';
+        }
       }
 
       loadBroadcastDetails();
     }
 
-    // Toolbar functionality (unchanged)
     function updateToolbar() {
       setTimeout(() => {
         toolbarBtns.forEach(btn => {
@@ -443,11 +475,10 @@
           showModal('Sent!', successMessage);
           editor.innerHTML = '';
         } else {
-          // Modified: handle daily limit case
           if (data.error && data.error.includes('Daily broadcast limit reached')) {
             showModal(
               'Daily Broadcast Limit Reached',
-              'You have reached your daily broadcast limit. Upgrade to a paid plan to send unlimited messages.',
+              'Daily broadcast limit reached.<br><br>Please upgrade your plan to enjoy unlimited broadcasts.',
               'error',
               () => { window.location.href = 'dashboard.html'; }
             );
@@ -480,7 +511,6 @@
 
       try {
         if (isEditMode) {
-          // ... (edit mode unchanged)
           const localDate = new Date(scheduleTimeLocal);
           const utcISO = localDate.toISOString();
 
@@ -530,11 +560,10 @@
             editor.innerHTML = '';
             scheduleTimeInput.value = '';
           } else {
-            // Modified: handle daily limit case
             if (data.error && data.error.includes('Daily broadcast limit reached')) {
               showModal(
                 'Daily Broadcast Limit Reached',
-                'You have reached your daily broadcast limit. Upgrade to a paid plan to send unlimited messages.',
+                'Daily broadcast limit reached.<br><br>Please upgrade your plan to enjoy unlimited broadcasts.',
                 'error',
                 () => { window.location.href = 'dashboard.html'; }
               );
