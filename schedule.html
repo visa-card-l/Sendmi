@@ -470,9 +470,8 @@
         }
 
         if (res.ok && data.success) {
-          let successMessage = 'Message sent to ' + data.sent + ' contacts';
-          if (data.failed > 0) successMessage += ' (' + data.failed + ' failed)';
-          showModal('Sent!', successMessage);
+          // FIXED: No longer shows "undefined contacts"
+          showModal('Sent!', 'Message sent to contacts<br><br>You will receive a delivery report via Telegram shortly.');
           editor.innerHTML = '';
         } else {
           if (data.error && data.error.includes('Daily broadcast limit reached')) {
