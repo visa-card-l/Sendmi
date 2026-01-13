@@ -168,6 +168,16 @@
     }
     .editor-content:focus { outline: none; border-color: var(--primary); }
 
+    .editor-content.over-limit {
+      border-color: var(--danger) !important;
+      background-color: #fff5f5;
+    }
+
+    #charCount.over {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
     .schedule-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; flex-wrap: wrap; }
     .btn { padding: 12px 24px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; transition: all 0.3s ease; }
     .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(21, 100, 192, 0.3); }
@@ -255,7 +265,7 @@
             <input type="datetime-local" id="schedule-time">
           </div>
           <div class="form-group">
-            <label>Message (supports bold, italic, links, lists)</label>
+            <label>Message (supports bold, italic, links, lists) • Max 4000 characters</label>
             <div class="editor-toolbar">
               <button type="button" class="editor-btn" data-command="bold"><i class="fas fa-bold"></i></button>
               <button type="button" class="editor-btn" data-command="italic"><i class="fas fa-italic"></i></button>
@@ -265,6 +275,12 @@
               <button type="button" class="editor-btn" data-command="createLink" title="Insert Link"><i class="fas fa-link"></i></button>
             </div>
             <div class="editor-content" id="editor" contenteditable="true"></div>
+
+            <!-- Character counter -->
+            <div style="margin-top:8px; font-size:14px; color:#6c757d; display:flex; justify-content:space-between; align-items:center;">
+              <span id="charCount">0 / 4000</span>
+              <span id="charWarning" style="color:var(--danger); font-weight:500; display:none;">Limit reached</span>
+            </div>
           </div>
           <div class="schedule-actions">
             <button type="button" class="btn btn-secondary" onclick="history.back()">Cancel</button>
@@ -289,12 +305,12 @@
 
   <script>
     // Hamburger menu
-    document.getElementById('hamburger').onclick = () => {
+    document.getElementById('hamburger').onclick = function() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('active');
     };
 
-    document.getElementById('overlay').onclick = () => {
+    document.getElementById('overlay').onclick = function() {
       document.getElementById('sidebar').classList.remove('open');
       document.getElementById('overlay').classList.remove('active');
     };
@@ -319,8 +335,13 @@
     const loadingState = document.getElementById('loadingState');
     const scheduleForm = document.getElementById('scheduleForm');
 
+    const charCountEl = document.getElementById('charCount');
+    const charWarningEl = document.getElementById('charWarning');
+
     let isEditMode = false;
     let currentBroadcastId = null;
+
+    const MAX_CHARS = 4000;
 
     function getToken() {
       const params = new URLSearchParams(window.location.search);
@@ -332,17 +353,17 @@
       window.location.href = 'login.html';
     }
 
-    function showModal(title, message, type = 'success', onOk = null) {
+    function showModal(title, message, type, onOk) {
+      if (type === undefined) type = 'success';
       modalTitle.textContent = title;
       modalMessage.innerHTML = message;
-      modalIcon.innerHTML = type === 'success' 
-        ? '<i class="fas fa-check-circle"></i>' 
+      modalIcon.innerHTML = (type === 'success')
+        ? '<i class="fas fa-check-circle"></i>'
         : '<i class="fas fa-exclamation-circle"></i>';
-      modalContent.className = `modal-content modal-${type}`;
+      modalContent.className = 'modal-content modal-' + type;
       modal.style.display = 'flex';
 
-      // Set OK button handler (overrides previous)
-      modalOkBtn.onclick = () => {
+      modalOkBtn.onclick = function() {
         closeModal();
         if (onOk) onOk();
       };
@@ -354,7 +375,7 @@
       modal.style.display = 'none';
     }
 
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', function(e) {
       if (e.target === modal) closeModal();
     });
 
@@ -382,7 +403,7 @@
             headers: { 'Authorization': 'Bearer ' + token }
           });
 
-          const data = await res.json().catch(() => ({ error: 'Failed to parse response' }));
+          const data = await res.json().catch(function() { return { error: 'Failed to parse response' }; });
 
           if (data.error === 'Access token required' || data.error === 'Invalid token') {
             return redirectToLogin();
@@ -399,6 +420,7 @@
           recipientsSelect.value = data.recipients || 'all';
 
           updateToolbar();
+          updateCharCount();
         } catch (err) {
           showModal('Error', err.message || 'Could not load broadcast details.', 'error');
           console.error(err);
@@ -412,16 +434,16 @@
     }
 
     function updateToolbar() {
-      setTimeout(() => {
-        toolbarBtns.forEach(btn => {
+      setTimeout(function() {
+        toolbarBtns.forEach(function(btn) {
           const command = btn.dataset.command;
           btn.classList.toggle('active', document.queryCommandState(command));
         });
       }, 0);
     }
 
-    toolbarBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+    toolbarBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
         editor.focus();
         const command = btn.dataset.command;
         if (command === 'createLink') {
@@ -438,6 +460,79 @@
     editor.addEventListener('keyup', updateToolbar);
     editor.addEventListener('mouseup', updateToolbar);
 
+    // ───────────────────────────────────────────────
+    // Character limit & counter (using + concatenation)
+    // ───────────────────────────────────────────────
+
+    function updateCharCount() {
+      const text = editor.innerText.trim();
+      const count = text.length;
+
+      charCountEl.textContent = count + ' / ' + MAX_CHARS;
+
+      const isOver  = count > MAX_CHARS;
+      const isClose = count > (MAX_CHARS - 200);
+
+      if (isOver || isClose) {
+        charCountEl.classList.add('over');
+      } else {
+        charCountEl.classList.remove('over');
+      }
+
+      if (isOver) {
+        editor.classList.add('over-limit');
+        charWarningEl.style.display = 'inline';
+      } else {
+        editor.classList.remove('over-limit');
+        charWarningEl.style.display = 'none';
+      }
+
+      return count;
+    }
+
+    function enforceCharLimit(e) {
+      const currentLength = editor.innerText.length;
+
+      const allowed =
+        e.key === 'Backspace' ||
+        e.key === 'Delete' ||
+        (e.metaKey || e.ctrlKey);
+
+      if (currentLength >= MAX_CHARS && !allowed) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    }
+
+    editor.addEventListener('input', function() {
+      updateCharCount();
+      updateToolbar();
+    });
+
+    editor.addEventListener('paste', function(e) {
+      setTimeout(function() {
+        const count = updateCharCount();
+        if (count > MAX_CHARS) {
+          const text = editor.innerText.substring(0, MAX_CHARS);
+          editor.innerText = text;
+          updateCharCount();
+        }
+      }, 0);
+    });
+
+    editor.addEventListener('keydown', enforceCharLimit);
+    editor.addEventListener('compositionend', updateCharCount);
+
+    toolbarBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        setTimeout(updateCharCount, 50);
+      });
+    });
+
+    // Initial count
+    updateCharCount();
+
     function getBroadcastData() {
       return {
         message: editor.innerHTML.trim(),
@@ -446,7 +541,10 @@
     }
 
     async function sendNow() {
-      const { message, recipients } = getBroadcastData();
+      const data = getBroadcastData();
+      const message = data.message;
+      const recipients = data.recipients;
+
       if (!message) return showModal('Missing Message', 'Please enter a message', 'error');
 
       const token = getToken();
@@ -459,30 +557,30 @@
         const res = await fetch(BACKEND_URL + '/api/broadcast/now', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ message, recipients })
+          body: JSON.stringify({ message: message, recipients: recipients })
         });
 
-        let data;
-        try { data = await res.json(); } catch { data = { error: 'Failed to parse response' }; }
+        let responseData;
+        try { responseData = await res.json(); } catch { responseData = { error: 'Failed to parse response' }; }
 
-        if (data.error === 'Access token required' || data.error === 'Invalid token') {
+        if (responseData.error === 'Access token required' || responseData.error === 'Invalid token') {
           return redirectToLogin();
         }
 
-        if (res.ok && data.success) {
-          // FIXED: No longer shows "undefined contacts"
+        if (res.ok && responseData.success) {
           showModal('Sent!', 'Message sent to contacts<br><br>You will receive a delivery report via Telegram shortly.');
           editor.innerHTML = '';
+          updateCharCount();
         } else {
-          if (data.error && data.error.includes('Daily broadcast limit reached')) {
+          if (responseData.error && responseData.error.indexOf('Daily broadcast limit reached') !== -1) {
             showModal(
               'Daily Broadcast Limit Reached',
               'Daily broadcast limit reached.<br><br>Please upgrade your plan to enjoy unlimited broadcasts.',
               'error',
-              () => { window.location.href = 'dashboard.html'; }
+              function() { window.location.href = 'dashboard.html'; }
             );
           } else {
-            showModal('Error', data.error || 'Failed to send', 'error');
+            showModal('Error', responseData.error || 'Failed to send', 'error');
           }
         }
       } catch (err) {
@@ -494,9 +592,11 @@
     }
 
     async function handleSubmit(e) {
-      e?.preventDefault();
+      if (e) e.preventDefault();
 
-      const { message, recipients } = getBroadcastData();
+      const data = getBroadcastData();
+      const message = data.message;
+      const recipients = data.recipients;
       const scheduleTimeLocal = scheduleTimeInput.value;
 
       if (!message) return showModal('Missing Message', 'Please enter a message', 'error');
@@ -516,21 +616,21 @@
           const res = await fetch(BACKEND_URL + '/api/broadcast/scheduled/' + currentBroadcastId, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({ message, scheduledTime: utcISO, recipients })
+            body: JSON.stringify({ message: message, scheduledTime: utcISO, recipients: recipients })
           });
 
-          const data = await res.json().catch(() => ({}));
+          const responseData = await res.json().catch(function() { return {}; });
 
-          if (data.error === 'Access token required' || data.error === 'Invalid token') return redirectToLogin();
+          if (responseData.error === 'Access token required' || responseData.error === 'Invalid token') return redirectToLogin();
 
-          if (res.ok && data.success) {
+          if (res.ok && responseData.success) {
             showModal('Updated!', 'Broadcast updated successfully.');
-            setTimeout(() => history.back(), 2000);
+            setTimeout(function() { history.back(); }, 2000);
           } else {
-            showModal('Error', data.error || 'Failed to update', 'error');
+            showModal('Error', responseData.error || 'Failed to update', 'error');
           }
         } else {
-          let payload = { message, recipients };
+          let payload = { message: message, recipients: recipients };
           if (scheduleTimeLocal) {
             const localDate = new Date(scheduleTimeLocal);
             payload.scheduledTime = localDate.toISOString();
@@ -544,30 +644,31 @@
             body: JSON.stringify(payload)
           });
 
-          const data = await res.json().catch(() => ({}));
+          const responseData = await res.json().catch(function() { return {}; });
 
-          if (data.error === 'Access token required' || data.error === 'Invalid token') return redirectToLogin();
+          if (responseData.error === 'Access token required' || responseData.error === 'Invalid token') return redirectToLogin();
 
-          if (data.success) {
-            if (data.immediate) {
-              let msg = 'Message sent to ' + data.sent + ' contacts';
-              if (data.failed > 0) msg += ' (' + data.failed + ' failed)';
+          if (responseData.success) {
+            if (responseData.immediate) {
+              let msg = 'Message sent to ' + responseData.sent + ' contacts';
+              if (responseData.failed > 0) msg += ' (' + responseData.failed + ' failed)';
               showModal('Sent Immediately!', msg);
             } else {
               showModal('Scheduled!', 'Broadcast scheduled successfully.');
             }
             editor.innerHTML = '';
             scheduleTimeInput.value = '';
+            updateCharCount();
           } else {
-            if (data.error && data.error.includes('Daily broadcast limit reached')) {
+            if (responseData.error && responseData.error.indexOf('Daily broadcast limit reached') !== -1) {
               showModal(
                 'Daily Broadcast Limit Reached',
                 'Daily broadcast limit reached.<br><br>Please upgrade your plan to enjoy unlimited broadcasts.',
                 'error',
-                () => { window.location.href = 'dashboard.html'; }
+                function() { window.location.href = 'dashboard.html'; }
               );
             } else {
-              showModal('Error', data.error || 'Failed to schedule', 'error');
+              showModal('Error', responseData.error || 'Failed to schedule', 'error');
             }
           }
         }
@@ -582,7 +683,7 @@
     sendNowBtn.addEventListener('click', sendNow);
     scheduleForm.addEventListener('submit', handleSubmit);
 
-    window.onload = () => {
+    window.onload = function() {
       if (!getToken()) redirectToLogin();
     };
   </script>
