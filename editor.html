@@ -33,7 +33,6 @@
   .btn-primary{background:var(--primary);color:white;}
   .btn-secondary{background:#f1f3f5;color:#555;}
 
-  /* Compact horizontal block selection */
   .block-grid{
     display:flex;
     justify-content:center;
@@ -61,10 +60,7 @@
     gap:8px;
   }
 
-  .block-option i{
-    font-size:24px;
-  }
-
+  .block-option i{font-size:24px;}
   .block-option:hover{
     background:var(--primary);
     color:white;
@@ -73,12 +69,7 @@
     box-shadow:0 8px 20px rgba(21,100,192,0.3);
   }
 
-  .block-modal-footer{
-    margin-top:24px;
-    display:flex;
-    justify-content:center;
-  }
-
+  .block-modal-footer{margin-top:24px;display:flex;justify-content:center;}
   .success-message{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--success);color:white;padding:16px 32px;border-radius:12px;font-weight:600;z-index:9999;opacity:0;transition:all .4s;}
   .success-message.show{opacity:1;transform:translateX(-50%) translateY(10px);}
   .image-edit-btn{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:white;padding:8px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .3s;cursor:pointer;}
@@ -175,7 +166,6 @@
   </div>
 </div>
 
-<!-- Reusable Message Modal -->
 <div class="modal" id="messageModal">
   <div class="modal-content">
     <h3 id="messageModalTitle">Message</h3>
@@ -230,7 +220,6 @@ function showMessage(title, text, onConfirm = null) {
     noBtn.style.display = 'none';
     okBtn.style.display = 'block';
 
-    // Special handling for page limit upgrade message
     if (title === 'Upgrade Required') {
       okBtn.onclick = () => {
         document.getElementById('messageModal').classList.remove('show');
@@ -264,6 +253,10 @@ function requireAuth() {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+//           IMPROVED SAFE TEXT SAVING & LOADING
+// ─────────────────────────────────────────────────────────────
+
 function buildCleanConfig() {
   const blocks = [];
 
@@ -276,12 +269,18 @@ function buildCleanConfig() {
 
     const textEl = wrapper.querySelector('h2.editable, p.editable');
     if (textEl) {
-      const content = textEl.textContent.trim();
-      if (content && content !== 'New text') {
+      let content = textEl.innerHTML
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/<\/?div[^>]*>/gi, '\n')
+        .replace(/\n\s*\n/g, '\n\n')      // Normalize to max 2 newlines
+        .trim();
+
+      if (content && content.length > 2 && content !== 'New text block — click to edit') {
         blocks.push({
           type: 'text',
           tag: textEl.tagName.toLowerCase(),
-          content
+          content: content
         });
         continue;
       }
@@ -377,7 +376,6 @@ async function savePage() {
       successToast.classList.add('show');
       setTimeout(() => successToast.classList.remove('show'), 6000);
     } else {
-      // Handle maximum pages limit with upgrade message + redirect
       if (data.error && data.error.includes('Maximum landing pages limit reached')) {
         showMessage('Upgrade Required', 'Maximum landing pages limit reached. Upgrade to premium to have unlimited pages.');
       } else {
@@ -395,8 +393,6 @@ async function savePage() {
 
 saveBtn.addEventListener('click', savePage);
 
-// ... (rest of your original script remains 100% unchanged below)
-
 function renderBlock(block) {
   const wrapper = document.createElement('div');
   wrapper.className = 'content-wrapper';
@@ -405,7 +401,12 @@ function renderBlock(block) {
     const el = document.createElement(block.tag || 'p');
     el.className = 'editable';
     el.contentEditable = true;
-    el.textContent = block.content;
+    
+    // Safely render preserved line breaks
+    el.innerHTML = block.content
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>');
+    
     wrapper.appendChild(el);
   } else if (block.type === 'image') {
     const container = document.createElement('div');
