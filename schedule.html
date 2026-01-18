@@ -159,8 +159,21 @@
     }
 
     .editor-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .editor-btn { background: var(--gray-100); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--gray-800); transition: background 0.2s; }
-    .editor-btn:hover, .editor-btn.active { background: var(--primary); color: white; }
+    .editor-btn { 
+      background: var(--gray-100); 
+      border: none; 
+      padding: 8px 12px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-size: 14px; 
+      color: var(--gray-800); 
+      transition: background 0.2s; 
+    }
+    .editor-btn:hover { background: #e0e0e0; }
+    .editor-btn.active { 
+      background: var(--primary); 
+      color: white; 
+    }
 
     .editor-content {
       height: 400px; max-width: 100%; border: 2px solid #e9ecef; border-radius: 12px; padding: 16px; font-size: 16px; line-height: 1.5;
@@ -379,6 +392,129 @@
       if (e.target === modal) closeModal();
     });
 
+    // Clean HTML (from working code)
+    function cleanMessage(html) {
+      return html
+        .replace(/(&nbsp;|\u00A0)+/g, ' ')
+        .replace(/>\s*&nbsp;\s*</g, '><')
+        .replace(/<p>(?:\s|&nbsp;|<br>)*<\/p>/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    // Toolbar State (integrated from the working code)
+    function updateToolbarState() {
+      requestAnimationFrame(function() {
+        let i;
+        for (i = 0; i < toolbarBtns.length; i++) {
+          const btn = toolbarBtns[i];
+          const cmd = btn.dataset.command;
+          let active = false;
+
+          if (cmd === 'insertUnorderedList' || cmd === 'insertOrderedList') {
+            active = document.queryCommandState('insertUnorderedList') || 
+                     document.queryCommandState('insertOrderedList');
+          } else if (cmd !== 'createLink') {
+            active = document.queryCommandState(cmd);
+          }
+
+          if (active) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+    }
+
+    let updateTimer;
+    function debounceUpdate() {
+      clearTimeout(updateTimer);
+      updateTimer = setTimeout(updateToolbarState, 60);
+    }
+
+    // Toolbar Buttons (integrated from working code)
+    let i;
+    for (i = 0; i < toolbarBtns.length; i++) {
+      const btn = toolbarBtns[i];
+      
+      btn.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+      });
+
+      btn.addEventListener('click', function() {
+        editor.focus();
+        const command = this.dataset.command;
+
+        if (command === 'createLink') {
+          const url = prompt('Enter link URL (https://...)');
+          if (url) document.execCommand('createLink', false, url);
+        } else {
+          document.execCommand(command, false, null);
+        }
+
+        setTimeout(updateToolbarState, 30);
+        setTimeout(updateToolbarState, 120);
+        setTimeout(updateToolbarState, 300);
+      });
+    }
+
+    // Sync events (from working code)
+    editor.addEventListener('selectionchange', debounceUpdate);
+    editor.addEventListener('input', debounceUpdate);
+    editor.addEventListener('keyup', debounceUpdate);
+    editor.addEventListener('mouseup', debounceUpdate);
+    editor.addEventListener('paste', function() {
+      setTimeout(debounceUpdate, 150);
+    });
+
+    // Character limit & counter (integrated from working code)
+    function updateCharCount() {
+      const len = editor.innerText.trim().length;
+      charCountEl.textContent = len + ' / ' + MAX_CHARS;
+
+      const isOver = len > MAX_CHARS;
+      if (len > MAX_CHARS - 200 || isOver) {
+        charCountEl.classList.add('over');
+      } else {
+        charCountEl.classList.remove('over');
+      }
+      
+      if (isOver) {
+        editor.classList.add('over-limit');
+        charWarningEl.style.display = 'inline';
+      } else {
+        editor.classList.remove('over-limit');
+        charWarningEl.style.display = 'none';
+      }
+      
+      return len;
+    }
+
+    editor.addEventListener('input', updateCharCount);
+
+    editor.addEventListener('keydown', function(e) {
+      if (editor.innerText.length >= MAX_CHARS &&
+          e.key !== 'Backspace' &&
+          e.key !== 'Delete' &&
+          !(e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+      }
+    });
+
+    editor.addEventListener('paste', function() {
+      setTimeout(function() {
+        if (updateCharCount() > MAX_CHARS) {
+          editor.innerText = editor.innerText.slice(0, MAX_CHARS);
+          updateCharCount();
+        }
+      }, 0);
+    });
+
+    // Initial calls
+    updateCharCount();
+    updateToolbarState();
+
     // Edit mode detection
     const urlParams = new URLSearchParams(window.location.search);
     const broadcastId = urlParams.get('broadcastId');
@@ -403,7 +539,7 @@
             headers: { 'Authorization': 'Bearer ' + token }
           });
 
-          const data = await res.json().catch(function() { return { error: 'Failed to parse response' }; });
+          const data = await res.json().catch(() => ({ error: 'Failed to parse response' }));
 
           if (data.error === 'Access token required' || data.error === 'Invalid token') {
             return redirectToLogin();
@@ -419,8 +555,9 @@
           scheduleTimeInput.value = data.scheduledTime;
           recipientsSelect.value = data.recipients || 'all';
 
-          updateToolbar();
           updateCharCount();
+          updateToolbarState();
+          setTimeout(updateToolbarState, 100);
         } catch (err) {
           showModal('Error', err.message || 'Could not load broadcast details.', 'error');
           console.error(err);
@@ -433,109 +570,9 @@
       loadBroadcastDetails();
     }
 
-    function updateToolbar() {
-      setTimeout(function() {
-        toolbarBtns.forEach(function(btn) {
-          const command = btn.dataset.command;
-          btn.classList.toggle('active', document.queryCommandState(command));
-        });
-      }, 0);
-    }
-
-    toolbarBtns.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        editor.focus();
-        const command = btn.dataset.command;
-        if (command === 'createLink') {
-          const url = prompt('Enter URL (e.g., https://example.com):');
-          if (url) document.execCommand(command, false, url);
-        } else {
-          document.execCommand(command, false, null);
-        }
-        updateToolbar();
-      });
-    });
-
-    editor.addEventListener('input', updateToolbar);
-    editor.addEventListener('keyup', updateToolbar);
-    editor.addEventListener('mouseup', updateToolbar);
-
-    // ───────────────────────────────────────────────
-    // Character limit & counter (using + concatenation)
-    // ───────────────────────────────────────────────
-
-    function updateCharCount() {
-      const text = editor.innerText.trim();
-      const count = text.length;
-
-      charCountEl.textContent = count + ' / ' + MAX_CHARS;
-
-      const isOver  = count > MAX_CHARS;
-      const isClose = count > (MAX_CHARS - 200);
-
-      if (isOver || isClose) {
-        charCountEl.classList.add('over');
-      } else {
-        charCountEl.classList.remove('over');
-      }
-
-      if (isOver) {
-        editor.classList.add('over-limit');
-        charWarningEl.style.display = 'inline';
-      } else {
-        editor.classList.remove('over-limit');
-        charWarningEl.style.display = 'none';
-      }
-
-      return count;
-    }
-
-    function enforceCharLimit(e) {
-      const currentLength = editor.innerText.length;
-
-      const allowed =
-        e.key === 'Backspace' ||
-        e.key === 'Delete' ||
-        (e.metaKey || e.ctrlKey);
-
-      if (currentLength >= MAX_CHARS && !allowed) {
-        e.preventDefault();
-        return false;
-      }
-      return true;
-    }
-
-    editor.addEventListener('input', function() {
-      updateCharCount();
-      updateToolbar();
-    });
-
-    editor.addEventListener('paste', function(e) {
-      setTimeout(function() {
-        const count = updateCharCount();
-        if (count > MAX_CHARS) {
-          const text = editor.innerText.substring(0, MAX_CHARS);
-          editor.innerText = text;
-          updateCharCount();
-        }
-      }, 0);
-    });
-
-    editor.addEventListener('keydown', enforceCharLimit);
-    editor.addEventListener('compositionend', updateCharCount);
-
-    toolbarBtns.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        setTimeout(updateCharCount, 50);
-      });
-    });
-
-    // Initial count
-    updateCharCount();
-
     function getBroadcastData() {
       return {
-        message: editor.innerHTML.trim(),
+        message: cleanMessage(editor.innerHTML),
         recipients: recipientsSelect.value
       };
     }
@@ -571,13 +608,14 @@
           showModal('Sent!', 'Message sent to contacts<br><br>You will receive a delivery report via Telegram shortly.');
           editor.innerHTML = '';
           updateCharCount();
+          updateToolbarState();
         } else {
           if (responseData.error && responseData.error.indexOf('Daily broadcast limit reached') !== -1) {
             showModal(
               'Daily Broadcast Limit Reached',
               'Daily broadcast limit reached.<br><br>Please upgrade your plan to enjoy unlimited broadcasts.',
               'error',
-              function() { window.location.href = 'dashboard.html'; }
+              () => { window.location.href = 'dashboard.html'; }
             );
           } else {
             showModal('Error', responseData.error || 'Failed to send', 'error');
@@ -619,13 +657,13 @@
             body: JSON.stringify({ message: message, scheduledTime: utcISO, recipients: recipients })
           });
 
-          const responseData = await res.json().catch(function() { return {}; });
+          const responseData = await res.json().catch(() => ({}));
 
           if (responseData.error === 'Access token required' || responseData.error === 'Invalid token') return redirectToLogin();
 
           if (res.ok && responseData.success) {
             showModal('Updated!', 'Broadcast updated successfully.');
-            setTimeout(function() { history.back(); }, 2000);
+            setTimeout(() => { history.back(); }, 2000);
           } else {
             showModal('Error', responseData.error || 'Failed to update', 'error');
           }
@@ -644,7 +682,7 @@
             body: JSON.stringify(payload)
           });
 
-          const responseData = await res.json().catch(function() { return {}; });
+          const responseData = await res.json().catch(() => ({}));
 
           if (responseData.error === 'Access token required' || responseData.error === 'Invalid token') return redirectToLogin();
 
@@ -659,13 +697,14 @@
             editor.innerHTML = '';
             scheduleTimeInput.value = '';
             updateCharCount();
+            updateToolbarState();
           } else {
             if (responseData.error && responseData.error.indexOf('Daily broadcast limit reached') !== -1) {
               showModal(
                 'Daily Broadcast Limit Reached',
                 'Daily broadcast limit reached.<br><br>Please upgrade your plan to enjoy unlimited broadcasts.',
                 'error',
-                function() { window.location.href = 'dashboard.html'; }
+                () => { window.location.href = 'dashboard.html'; }
               );
             } else {
               showModal('Error', responseData.error || 'Failed to schedule', 'error');
@@ -685,6 +724,7 @@
 
     window.onload = function() {
       if (!getToken()) redirectToLogin();
+      updateToolbarState();
     };
   </script>
 </body>
