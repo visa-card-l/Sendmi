@@ -2,13 +2,98 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smavo</title>
-  <script>
-    // Instantly replace current page with login.html
-    window.location.replace("https://sendm.onrender.com/p/4e623734");
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sendmi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1564C0;
+      --primary-light: #3485e5;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f8fbff;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    .logo .tall-s { font-size: 64px; }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      max-width: 600px;
+    }
+    h1 span { color: var(--primary); }
+
+    p {
+      font-size: 18px;
+      max-width: 500px;
+      margin-bottom: 40px;
+      opacity: 0.9;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      padding: 18px 40px;
+      border-radius: 16px;
+      font-size: 20px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      box-shadow: 0 10px 30px rgba(21,100,192,0.3);
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background: var(--primary-light);
+      transform: translateY(-4px);
+    }
+
+    .small-link {
+      margin-top: 32px;
+      font-size: 16px;
+    }
+    .small-link a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .small-link a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .logo { font-size: 40px; }
+      .logo .tall-s { font-size: 54px; }
+      h1 { font-size: 30px; }
+      p { font-size: 17px; }
+      .btn { padding: 16px 32px; font-size: 18px; }
+    }
+  </style>
 </head>
 <body>
+
+  <div class="logo"><span class="tall-s">S</span>endmi</div>
+  <h1>Grow your audience  <span></span></h1>
+  <p>Create forms and landing pages. Collect contacts. Send broadcasts.</p>
+  <a href="signup.html" class="btn">Get Started Free</a>
+
+  <div class="small-link">
+    <a href="login.html">Already have an account? Login</a>
+  </div>
+
 </body>
 </html>
