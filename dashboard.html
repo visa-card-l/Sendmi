@@ -26,7 +26,69 @@
       position: relative;
     }
 
-    /* Blur overlay when Telegram bot not connected */
+    /* Activation Banner – white version */
+    .activation-banner {
+      background: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+      color: #444;
+      padding: 14px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 15px;
+      position: sticky;
+      top: 64px;
+      z-index: 9;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    .banner-content {
+      max-width: 900px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .activation-banner strong {
+      color: #222;
+      font-weight: 600;
+    }
+
+    .activate-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s;
+      white-space: nowrap;
+    }
+
+    .activate-btn:hover {
+      background: var(--primary-light);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 680px) {
+      .activation-banner {
+        padding: 12px 20px;
+        font-size: 14px;
+      }
+      .banner-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+      }
+    }
+
+    /* Old blur overlay – kept but currently unused for Telegram */
     .blur-overlay {
       position: fixed;
       inset: 0;
@@ -58,17 +120,6 @@
     }
     .blur-overlay.active .blur-modal { transform: scale(1); }
 
-    .blur-modal h2 {
-      font-size: 28px;
-      margin-bottom: 16px;
-      color: #222;
-    }
-    .blur-modal p {
-      color: #555;
-      font-size: 16px;
-      margin-bottom: 30px;
-      line-height: 1.6;
-    }
     .connect-btn {
       background: var(--primary);
       color: white;
@@ -87,7 +138,7 @@
       box-shadow: 0 15px 35px rgba(21,100,192,0.4);
     }
 
-    /* Dashboard styles */
+    /* Dashboard layout */
     .sidebar { 
       width:260px; 
       background:white; 
@@ -138,7 +189,6 @@
       transition:0.2s; 
     }
     .logout-item:hover { background:#fee2e2; }
-    .logout-item i { width:24px; margin-right:12px; }
     .overlay { 
       position:fixed; 
       inset:0; 
@@ -164,12 +214,12 @@
       position:sticky; 
       top:0; 
       z-index:10; 
+      height: 64px;
     }
     .logo-section { display:flex; align-items:center; gap:12px; }
     .hamburger { font-size:24px; cursor:pointer; color:var(--primary); display:none; }
     .logo { font-size:18px; font-weight:700; font-family:'Poppins',sans-serif; color:var(--primary); letter-spacing:1px; }
     .tall-s { font-size:26px; vertical-align:baseline; }
-    .logo-sidebar .tall-s { font-size:34px; }
     .user-info { display:flex; align-items:center; gap:14px; font-weight:500; }
     .avatar { 
       width:40px; 
@@ -258,7 +308,7 @@
       .hamburger { display:block; } 
     }
 
-    /* Upgrade Modal */
+    /* Upgrade Comparison Modal */
     .comparison-modal {
       position: fixed;
       inset: 0;
@@ -352,8 +402,18 @@
 </head>
 <body>
 
-  <!-- Telegram 2FA Blur Modal -->
-  <div class="blur-overlay" id="blurOverlay">
+  <!-- White Activation Banner -->
+  <div class="activation-banner" id="activationBanner" style="display: none;">
+    <div class="banner-content">
+      <span>Your account is not yet activated — connect Telegram to receive security codes & enable 2FA</span>
+      <button class="activate-btn" onclick="window.open('bot.html', '_blank')">
+        Activate Now
+      </button>
+    </div>
+  </div>
+
+  <!-- Optional: old blur overlay (kept but not used for Telegram connection) -->
+  <div class="blur-overlay" id="blurOverlay" style="display:none;">
     <div class="blur-modal">
       <h2>Telegram 2FA Required</h2>
       <p>For security, you must connect your personal Telegram bot to receive password reset codes and enable 2FA.</p>
@@ -378,8 +438,8 @@
           <div class="price">₦0<span>/month</span></div>
           <ul class="features">
             <li><i class="fas fa-check"></i> 8 broadcasts per day</li>
-            <li><i class="fas fa-check"></i>   1 landing page</li>
-            <li><i class="fas fa-check"></i>  1 form</li>
+            <li><i class="fas fa-check"></i> 1 landing page</li>
+            <li><i class="fas fa-check"></i> 1 form</li>
             <li><i class="fas fa-check"></i> Basic scheduling</li>
             <li><i class="fas fa-check"></i> Contact management</li>
             <li class="no"><i class="fas fa-times"></i> Unlimited broadcasts</li>
@@ -434,7 +494,6 @@
       </div>
 
       <div class="stats-grid">
-        <!-- Current Plan -->
         <div class="stat-card">
           <div class="stat-label">Current Plan</div>
           <div class="plan-badge" id="planBadge">Loading...</div>
@@ -443,7 +502,6 @@
           <button class="upgrade-btn" id="upgradeBtn">Upgrade Plan</button>
         </div>
 
-        <!-- Total Contacts -->
         <div class="stat-card">
           <div class="stat-label">Total Contacts</div>
           <div class="stat-value" id="totalContacts">—</div>
@@ -451,7 +509,6 @@
           <button class="view-btn visible" id="viewContactsBtn">View Contacts</button>
         </div>
 
-        <!-- Forms & Landing Pages -->
         <div class="stat-card">
           <div class="stat-label">Forms & Landing Pages</div>
           <div class="stat-value" id="totalPages">—</div>
@@ -459,7 +516,6 @@
           <button class="view-btn visible" id="viewPagesBtn">View All</button>
         </div>
 
-        <!-- Scheduled Broadcasts -->
         <div class="stat-card">
           <div class="stat-label">Scheduled Broadcasts</div>
           <div class="stat-value" id="scheduledCount">—</div>
@@ -471,14 +527,14 @@
   </div>
 
   <script>
-    const API_BASE_URL = 'https://sendm.onrender.com'; // Update if needed
+    const API_BASE_URL = 'https://sendm.onrender.com';
 
     // DOM Elements
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     const logoutBtn = document.getElementById('logoutBtn');
-    const blurOverlay = document.getElementById('blurOverlay');
+    const activationBanner = document.getElementById('activationBanner');
     const userNameEl = document.getElementById('userName');
     const userAvatarEl = document.getElementById('userAvatar');
     const upgradeBtn = document.getElementById('upgradeBtn');
@@ -486,16 +542,16 @@
     const modalUpgradeBtn = document.getElementById('modalUpgradeBtn');
     const closeModalBtn = comparisonModal.querySelector('.close-modal');
 
-    // View Buttons
+    // Navigation
     document.getElementById('viewContactsBtn').addEventListener('click', () => window.location.href = 'contacts.html');
     document.getElementById('viewPagesBtn').addEventListener('click', () => window.location.href = 'pages.html');
     document.getElementById('viewScheduledBtn').addEventListener('click', () => window.location.href = 'broadcast.html');
 
-    // Sidebar & Modal Controls
     hamburger.addEventListener('click', () => {
       sidebar.classList.toggle('open');
       overlay.classList.toggle('active');
     });
+
     overlay.addEventListener('click', () => {
       sidebar.classList.remove('open');
       overlay.classList.remove('active');
@@ -520,7 +576,6 @@
       if (e.target === comparisonModal) comparisonModal.classList.remove('active');
     });
 
-    // Upgrade Payment
     async function initiateUpgrade(button) {
       const originalText = button.textContent.trim();
       button.textContent = 'Processing...';
@@ -551,7 +606,6 @@
 
     modalUpgradeBtn.addEventListener('click', () => initiateUpgrade(modalUpgradeBtn));
 
-    // Load All Dashboard Stats in Parallel
     async function loadDashboardStats() {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -573,16 +627,16 @@
           fetch(`${API_BASE_URL}/api/broadcast/scheduled`, { headers })
         ]);
 
-        // User Info
         if (meRes.ok) {
           const { user } = await meRes.json();
           userNameEl.textContent = user.fullName || user.email.split('@')[0];
           const initials = (user.fullName || user.email).split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
           userAvatarEl.textContent = initials || '??';
-          blurOverlay.classList.toggle('active', !user.isTelegramConnected);
+
+          // Show/hide white banner
+          activationBanner.style.display = user.isTelegramConnected ? 'none' : 'flex';
         }
 
-        // Subscription Plan
         if (subRes.ok) {
           const sub = await subRes.json();
           const planBadge = document.getElementById('planBadge');
@@ -593,7 +647,7 @@
             planBadge.textContent = 'Premium Plan';
             planBadge.style.background = '#d4edda';
             planBadge.style.color = '#155724';
-            planValue.textContent = 'Premium';  // Changed: No price shown
+            planValue.textContent = 'Premium';
             planDesc.textContent = 'Active until ' + new Date(sub.endDate).toLocaleDateString();
             planDesc.style.color = '#28a745';
             upgradeBtn.classList.remove('visible');
@@ -608,7 +662,6 @@
           }
         }
 
-        // Contacts
         if (contactsRes.ok) {
           const { contacts } = await contactsRes.json();
           const count = contacts.length;
@@ -617,7 +670,6 @@
           document.getElementById('contactsNote').classList.remove('loading');
         }
 
-        // Forms & Landing Pages
         const pagesData = pagesRes.ok ? await pagesRes.json() : { pages: [] };
         const formsData = formsRes.ok ? await formsRes.json() : { forms: [] };
         const totalCount = pagesData.pages.length + formsData.forms.length;
@@ -627,7 +679,6 @@
           pagesData.pages.length + " pages • " + formsData.forms.length + " forms";
         document.getElementById('pagesNote').classList.remove('loading');
 
-        // Scheduled Broadcasts
         if (scheduledRes.ok) {
           const { scheduled } = await scheduledRes.json();
           const count = scheduled.length;
@@ -644,7 +695,6 @@
       }
     }
 
-    // Load on page ready
     loadDashboardStats();
   </script>
 </body>
