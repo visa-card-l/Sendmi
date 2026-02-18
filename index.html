@@ -4,70 +4,103 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sendmi</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #1564C0;
       --primary-light: #3485e5;
+      --bg: #f8fbff;
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: 'Poppins', sans-serif;
-      background: #f8fbff;
+      background: var(--bg);
       color: #1a1a1a;
       min-height: 100vh;
+      text-align: center;
+      padding-top: 90px;
+    }
+
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: white;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -1.2px;
+    }
+    .logo .tall-s {
+      font-size: 58px;
+      line-height: 0.75;
+      display: inline-block;
+      transform: translateY(4px);
+    }
+
+    .hero {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 40px 20px;
+      min-height: calc(100vh - 90px);
+      padding: 20px;
     }
-
-    .logo {
-      font-size: 48px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 16px;
-    }
-    .logo .tall-s { font-size: 64px; }
 
     h1 {
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 24px;
-      max-width: 600px;
+      font-size: 52px;
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: 1.2px;
+      margin-bottom: 32px;
+      max-width: 720px;
     }
+
     h1 span { color: var(--primary); }
 
     p {
-      font-size: 18px;
-      max-width: 500px;
-      margin-bottom: 40px;
-      opacity: 0.9;
+      font-size: 22px;
+      max-width: 640px;
+      margin-bottom: 48px;
+      line-height: 1.55;
+      opacity: 0.92;
+      font-weight: 400;
     }
 
     .btn {
       background: var(--primary);
       color: white;
-      padding: 18px 40px;
-      border-radius: 16px;
-      font-size: 20px;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-size: 18px;
       font-weight: 600;
       text-decoration: none;
       display: inline-block;
-      box-shadow: 0 10px 30px rgba(21,100,192,0.3);
-      transition: all 0.3s;
+      box-shadow: 0 8px 24px rgba(21,100,192,0.22);
+      transition: all 0.3s ease;
     }
     .btn:hover {
       background: var(--primary-light);
-      transform: translateY(-4px);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(21,100,192,0.30);
     }
 
     .small-link {
-      margin-top: 32px;
-      font-size: 16px;
+      margin-top: 48px;
+      font-size: 17px;
+      font-weight: 400;
     }
     .small-link a {
       color: var(--primary);
@@ -76,23 +109,52 @@
     .small-link a:hover { text-decoration: underline; }
 
     @media (max-width: 768px) {
-      .logo { font-size: 40px; }
-      .logo .tall-s { font-size: 54px; }
-      h1 { font-size: 30px; }
-      p { font-size: 17px; }
-      .btn { padding: 16px 32px; font-size: 18px; }
+      .top-bar { 
+        padding: 0 24px; 
+        height: 70px; 
+      }
+      body { padding-top: 80px; }
+      .logo { font-size: 36px; }
+      .logo .tall-s { font-size: 50px; }
+      h1 { 
+        font-size: 42px; 
+        max-width: 90%;
+      }
+      p { font-size: 20px; max-width: 90%; }
+      .btn { 
+        padding: 12px 32px; 
+        font-size: 17px; 
+        border-radius: 40px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 36px; }
+      .logo { font-size: 32px; }
+      .logo .tall-s { font-size: 44px; }
+      .btn { 
+        padding: 12px 28px; 
+        font-size: 16px; 
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="logo"><span class="tall-s">S</span>endmi</div>
-  <h1>Grow your audience  <span></span></h1>
-  <p>Create forms and landing pages. Collect contacts. Send broadcasts.</p>
-  <a href="signup.html" class="btn">Get Started Free</a>
+  <div class="top-bar">
+    <div class="logo"><span class="tall-s">S</span>endmi</div>
+  </div>
 
-  <div class="small-link">
-    <a href="login.html">Already have an account? Login</a>
+  <div class="hero">
+    <h1>Grow your audience <span>fast</span></h1>
+    
+    <p>Create forms and landing pages. Collect contacts. Send broadcasts.</p>
+    
+    <a href="signup.html" class="btn">Get Started Free</a>
+
+    <div class="small-link">
+      <a href="login.html">Already have an account? Login</a>
+    </div>
   </div>
 
 </body>
